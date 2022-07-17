@@ -1,6 +1,12 @@
 from enum import Enum
 from typing import Union
 from fastapi import FastAPI
+import uvicorn
+from pydantic import BaseModel
+
+# List of models
+fake_items_db = [{"item_name": "Foo"}, {
+    "item_name": "Bar"}, {"item_name": "Baz"}]
 
 
 class ModelName(str, Enum):
@@ -9,9 +15,12 @@ class ModelName(str, Enum):
     gamma = "gamma"
 
 
-# List of models
-fake_items_db = [{"item_name": "Foo"}, {
-    "item_name": "Bar"}, {"item_name": "Baz"}]
+class Item(BaseModel):
+    name: str
+    description: Union[str, None] = None
+    price: float
+    tax: Union[float, None] = None
+
 
 app = FastAPI()
 
@@ -74,3 +83,13 @@ async def read_user_item(
             {"description": "This is an amazing item that has a long description"}
         )
     return item
+
+
+@app.post("/items/")
+async def create_item(item: Item):
+    return item
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # uvicorn.run("main: app", host="0.0.0.0", port=8000, reload=True)
