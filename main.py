@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List, Union
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Path, Query
 import uvicorn
 from pydantic import BaseModel
 
@@ -30,11 +30,6 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/users/me")
-async def read_user_me():
-    return {"user_id": "the current user"}
-
-
 @app.get("/models/{model_name}")
 async def get_model(model_name: ModelName):
     if model_name == ModelName.alpha:
@@ -53,17 +48,7 @@ async def get_model(model_name: ModelName):
 async def read_file(file_path: str):
     return {"file_path": file_path}
 
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: str, q: Union[str, None] = None, short: bool = False):
-    item = {"item_id": item_id}
-    if q:
-        item.update({"q": q})
-    if not short:
-        item.update(
-            {"description": "This is an amazing item that has a long description"}
-        )
-    return item
+# users
 
 
 @app.get("/users/{user_id}/items/{item_id}")
@@ -78,6 +63,8 @@ async def read_user_item(
             {"description": "This is an amazing item that has a long description"}
         )
     return item
+
+# items
 
 
 @app.get("/items/")
@@ -106,6 +93,30 @@ async def create_item(item: Item):
         price_with_tax = item.price + item.tax
         item_dict.update({"price_with_tax": price_with_tax})
     return item_dict
+
+# items/{item_id}/
+
+
+# @app.get("/items/{item_id}")
+# async def read_item(item_id: str, q: Union[str, None] = None, short: bool = False):
+#     item = {"item_id": item_id}
+#     if q:
+#         item.update({"q": q})
+#     if not short:
+#         item.update(
+#             {"description": "This is an amazing item that has a long description"}
+#         )
+#     return item
+
+@app.get("/items/{item_id}")
+async def read_items(
+    item_id: int = Path(title="The ID of the item to get"),
+    q: Union[str, None] = Query(default=None, alias="item-query"),
+):
+    results = {"item_id": item_id}
+    if q:
+        results.update({"q": q})
+    return results
 
 
 @app.put("/items/{item_id}")
