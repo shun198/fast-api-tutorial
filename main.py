@@ -5,8 +5,7 @@ import uvicorn
 from pydantic import BaseModel
 
 # List of models
-fake_items_db = [{"item_name": "Foo"}, {
-    "item_name": "Bar"}, {"item_name": "Baz"}]
+fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
 
 
 class ModelName(str, Enum):
@@ -48,9 +47,8 @@ async def get_model(model_name: ModelName):
 async def read_file(file_path: str):
     return {"file_path": file_path}
 
+
 # users
-
-
 @app.get("/users/{user_id}/items/{item_id}")
 async def read_user_item(
     user_id: int, item_id: str, q: Union[str, None] = None, short: bool = False
@@ -64,9 +62,8 @@ async def read_user_item(
         )
     return item
 
+
 # items
-
-
 @app.get("/items/")
 async def read_items(
     q: Union[str, None] = Query(
@@ -94,19 +91,6 @@ async def create_item(item: Item):
         item_dict.update({"price_with_tax": price_with_tax})
     return item_dict
 
-# items/{item_id}/
-
-
-# @app.get("/items/{item_id}")
-# async def read_item(item_id: str, q: Union[str, None] = None, short: bool = False):
-#     item = {"item_id": item_id}
-#     if q:
-#         item.update({"q": q})
-#     if not short:
-#         item.update(
-#             {"description": "This is an amazing item that has a long description"}
-#         )
-#     return item
 
 @app.get("/items/{item_id}")
 async def read_items(
