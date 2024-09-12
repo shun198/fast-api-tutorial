@@ -1,0 +1,64 @@
+[tool.poetry]
+name = "fastapi-tutorial"
+version = "0.1.0"
+description = ""
+authors = ["shun198"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11.8"
+fastapi = "^0.78.0"
+psycopg2 = "^2.9.9"
+uvicorn= "^0.17.6"
+SQLAlchemy = "^2.0.28"
+gunicorn = "^20.1.0"
+requests = "^2.31.0"
+boto3 = "^1.26.22"
+pydantic= "^1.10.4"
+sqlalchemy-utils = "^0.41.1"
+alembic = "^1.13.1"
+email-validator = "^2.1.1"
+bcrypt = "^4.1.2"
+passlib = "^1.7.4"
+
+[tool.poetry.dev-dependencies]
+black = "^24.3.0"
+factory-boy = "^3.2.1"
+freezegun = "^1.2.2"
+isort = "^5.11.4"
+pytest = "^8.1.1"
+pytest-clarity = "^1.0.1"
+pytest-cov = "^4.0.0"
+pytest-custom-exit-code = "^0.3.0"
+pytest-github-actions-annotate-failures = "^0.2.0"
+pytest-mock = "^3.10.0"
+pytest-sugar = "^1.0.0"
+pytest-xdist = "^3.0.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+line_length = 79
+profile = "black"
+
+[tool.black]
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+)
+'''
+include = '\.py$'
+line-length = 79

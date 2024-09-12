@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: db
+    build:
+      context: .
+      dockerfile: containers/postgres/Dockerfile
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U "${POSTGRES_USER:-postgres}" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      - POSTGRES_NAME
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    ports:
+      - "5432:5432" # デバッグ用
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: containers/fastapi/Dockerfile
+    volumes:
+      - ./application:/code
+    ports:
+      - 8000:8000
+      # デバッグ用ポート
+      # - 5678:5678
+      - 8080:8080
+    command: poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  db_data:
