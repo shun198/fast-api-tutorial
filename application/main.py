@@ -1,76 +1,76 @@
-from enum import Enum
-from typing import Union
+from fastapi import Body, FastAPI
 
-from fastapi import FastAPI
-
-
-class ModelName(str, Enum):
-    alexnet = "alexnet"
-    resnet = "resnet"
-    lenet = "lenet"
+app = FastAPI()
 
 
-fake_items_db = [
-    {"item_name": "Foo"},
-    {"item_name": "Bar"},
-    {"item_name": "Baz"},
+BOOKS = [
+    {'title': 'Title One', 'author': 'Author One', 'category': 'science'},
+    {'title': 'Title Two', 'author': 'Author Two', 'category': 'science'},
+    {'title': 'Title Three', 'author': 'Author Three', 'category': 'history'},
+    {'title': 'Title Four', 'author': 'Author Four', 'category': 'math'},
+    {'title': 'Title Five', 'author': 'Author Five', 'category': 'math'},
+    {'title': 'Title Six', 'author': 'Author Two', 'category': 'math'}
 ]
 
 
-app = FastAPI(
-    title="FastAPI Tutorial",
-    version="0.0.1",
-)
+@app.get("/books")
+async def read_all_books():
+    return BOOKS
 
 
-@app.get("/api/health")
-async def health_check():
-    """ヘルスチェック用のAPI"""
-    return {"status": "pass"}
+@app.get("/books/{book_title}")
+async def read_book(book_title: str):
+    for book in BOOKS:
+        if book.get('title').casefold() == book_title.casefold():
+            return book
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.get("/books/")
+async def read_category_by_query(category: str):
+    books_to_return = []
+    for book in BOOKS:
+        if book.get('category').casefold() == category.casefold():
+            books_to_return.append(book)
+    return books_to_return
 
 
-@app.get("/items/")
-async def read_item(skip: int = 0, limit: int = 10):
-    return fake_items_db[skip : skip + limit]
+# Get all books from a specific author using path or query parameters
+@app.get("/books/byauthor/")
+async def read_books_by_author_path(author: str):
+    books_to_return = []
+    for book in BOOKS:
+        if book.get('author').casefold() == author.casefold():
+            books_to_return.append(book)
+
+    return books_to_return
 
 
-@app.get("/items/{item_id}")
-async def read_item(item_id: int):
-    return {"item_id": item_id}
+@app.get("/books/{book_author}/")
+async def read_author_category_by_query(book_author: str, category: str):
+    books_to_return = []
+    for book in BOOKS:
+        if book.get('author').casefold() == book_author.casefold() and \
+                book.get('category').casefold() == category.casefold():
+            books_to_return.append(book)
+
+    return books_to_return
 
 
-@app.get("/models/{model_name}")
-async def get_model(model_name: ModelName):
-    if model_name is ModelName.alexnet:
-        return {"model_name": model_name, "message": "Deep Learning FTW!"}
-
-    if model_name.value == "lenet":
-        return {"model_name": model_name, "message": "LeCNN all the images"}
-
-    return {"model_name": model_name, "message": "Have some residuals"}
+@app.post("/books/create_book")
+async def create_book(new_book=Body()):
+    BOOKS.append(new_book)
 
 
-@app.get("/files/{file_path:path}")
-async def read_file(file_path: str):
-    return {"file_path": file_path}
+@app.put("/books/update_book")
+async def update_book(updated_book=Body()):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].get('title').casefold() == updated_book.get('title').casefold():
+            BOOKS[i] = updated_book
 
 
-@app.get("/users/{user_id}/items/{item_id}")
-async def read_user_item(
-    user_id: int, item_id: str, q: Union[str, None] = None, short: bool = False
-):
-    item = {"item_id": item_id, "owner_id": user_id}
-    if q:
-        item.update({"q": q})
-    if not short:
-        item.update(
-            {
-                "description": "This is an amazing item that has a long description"
-            }
-        )
-    return item
+@app.delete("/books/delete_book/{book_title}")
+async def delete_book(book_title: str):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].get('title').casefold() == book_title.casefold():
+            BOOKS.pop(i)
+            break
