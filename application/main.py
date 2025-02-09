@@ -28,5 +28,8 @@ def health_check():
 # https://github.com/fastapi/fastapi/pull/9298
 # FastAPI0.95.0以降の機能
 @app.get("/api/books")
-def read_all(db: Annotated[Session, Depends(get_db)]):
+# 依存性注入をすることでget_dbメソッドが自動的に呼ばるので毎回セッションインスタンスの生成やセッションを切る処理を書かずに済む
+# Annotatedを使うことでDepends(get_db)がSession型だとわかる
+# https://fastapi.tiangolo.com/tutorial/sql-databases/#create-a-session-dependency
+def read_books(db: Annotated[Session, Depends(get_db)]):
     return db.query(Todos).all()
