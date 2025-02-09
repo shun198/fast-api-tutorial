@@ -22,7 +22,9 @@ async def get_db():
     finally:
         db.close()
 
-
+# 依存性注入をすることでget_dbメソッドが自動的に呼ばるので毎回セッションインスタンスの生成やセッションを切る処理を書かずに済む
+# Annotatedを使うことでDepends(get_db)がSession型だとわかる
+# https://fastapi.tiangolo.com/tutorial/sql-databases/#create-a-session-dependency
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
@@ -35,9 +37,6 @@ def health_check():
 # https://github.com/fastapi/fastapi/pull/9298
 # FastAPI0.95.0以降の機能
 @app.get("/api/todos", response_model=List[TodoResponse])
-# 依存性注入をすることでget_dbメソッドが自動的に呼ばるので毎回セッションインスタンスの生成やセッションを切る処理を書かずに済む
-# Annotatedを使うことでDepends(get_db)がSession型だとわかる
-# https://fastapi.tiangolo.com/tutorial/sql-databases/#create-a-session-dependency
 def read_todos(db: db_dependency):
     # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#simple-select
     # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.scalars
@@ -81,7 +80,7 @@ async def update_todo(db: db_dependency, todo_model: TodoModel, todo_id: int):
         )
     # https://docs.sqlalchemy.org/en/20/core/dml.html#sqlalchemy.sql.expression.update
     db.execute(
-        update(Todos).where(todo.id == todo_id).values(**todo_model.model_dump())
+        update(Todos).where(Todos.id == todo_id).values(**todo_model.model_dump())
     )
     db.commit()
     return todo
