@@ -1,8 +1,9 @@
 from typing import Annotated
 
 from database import SessionLocal, engine
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException, status
 from models import Base, Todos
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 app = FastAPI()
@@ -32,4 +33,13 @@ def health_check():
 # Annotatedを使うことでDepends(get_db)がSession型だとわかる
 # https://fastapi.tiangolo.com/tutorial/sql-databases/#create-a-session-dependency
 def read_todos(db: Annotated[Session, Depends(get_db)]):
-    return db.query(Todos).all()
+    # https://docs.sqlalchemy.org/en/20/orm/queryguide/select.html#writing-select-statements-for-orm-mapped-classes
+    return db.execute(select(Todos).order_by(Todos.id))
+
+
+@app.get("/api/todos/{todo_id}")
+def read_todos(db: Annotated[Session, Depends(get_db)], todo_id: int):
+    todo = db.get(Todos, todo_id)
+    if not todo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
+    return todo
