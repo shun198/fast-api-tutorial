@@ -63,15 +63,15 @@ def create_todo(db: db_dependency, todo_model: TodoModel):
     return todo
 
 
-@app.put("/todo/{todo_id}", response_model=TodoResponse, status_code=status.HTTP_204_NO_CONTENT)
-async def update_todo(db: db_dependency ,todo_model: TodoModel, todo_id: int):
-    todo = db.get(Todos, todo_id)
-    if not todo:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
+# @app.put("/todo/{todo_id}", response_model=TodoResponse, status_code=status.HTTP_204_NO_CONTENT)
+# async def update_todo(db: db_dependency ,todo_model: TodoModel, todo_id: int):
+#     todo = db.get(Todos, todo_id)
+#     if not todo:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
 
 
-@app.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_todo(db: db_dependency, todo_id: int):
-    todo = db.get(Todos, todo_id)
-    if not todo:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
+# @app.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+# async def delete_todo(db: db_dependency, todo_id: int):
+#     todo = db.get(Todos, todo_id)
+#     if not todo:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
