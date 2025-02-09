@@ -19,8 +19,7 @@ update:
 	$(RUN_APP) poetry update
 
 format:
-	$(RUN_POETRY) black .
-	$(RUN_POETRY) isort .
+	$(RUN_POETRY) ruff format
 
 test:
 	$(RUN_POETRY) pytest
