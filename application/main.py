@@ -3,6 +3,7 @@ from typing import Annotated
 from database import SessionLocal, engine
 from fastapi import Depends, FastAPI, HTTPException, status
 from models import Base, Todos
+from schemas import TodoRequest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,6 +21,10 @@ async def get_db():
     finally:
         db.close()
 
+
+db_dependency = Annotated[Session, Depends(get_db)]
+
+
 @app.get("/api/health")
 def health_check():
     return {"msg": "pass"}
@@ -32,14 +37,23 @@ def health_check():
 # 依存性注入をすることでget_dbメソッドが自動的に呼ばるので毎回セッションインスタンスの生成やセッションを切る処理を書かずに済む
 # Annotatedを使うことでDepends(get_db)がSession型だとわかる
 # https://fastapi.tiangolo.com/tutorial/sql-databases/#create-a-session-dependency
-def read_todos(db: Annotated[Session, Depends(get_db)]):
+def read_todos(db: db_dependency):
     # https://docs.sqlalchemy.org/en/20/orm/queryguide/select.html#writing-select-statements-for-orm-mapped-classes
     return db.execute(select(Todos).order_by(Todos.id))
 
 
 @app.get("/api/todos/{todo_id}")
-def read_todos(db: Annotated[Session, Depends(get_db)], todo_id: int):
+def read_todos(db: db_dependency, todo_id: int):
     todo = db.get(Todos, todo_id)
     if not todo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
     return todo
+
+
+@app.post("/api/todos")
+def create_todo(db: db_dependency, todo_request: TodoRequest):
+    # pydantic2ではdict()ではなく、model_dumpが使用されている
+    # https://docs.pydantic.dev/latest/concepts/serialization/#modelmodel_dump
+    todo = TodoRequest(**todo_request.model_dump())
+    db.add(todo)
+    db.commit()
