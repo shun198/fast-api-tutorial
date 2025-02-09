@@ -3,7 +3,7 @@ from typing import Annotated
 from database import SessionLocal, engine
 from fastapi import Depends, FastAPI, HTTPException, status
 from models import Base, Todos
-from schemas import TodoRequest
+from schemas import TodoModel, TodoResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -43,17 +43,35 @@ def read_todos(db: db_dependency):
 
 
 @app.get("/api/todos/{todo_id}")
-def read_todos(db: db_dependency, todo_id: int):
+def read_todo(db: db_dependency, todo_id: int):
     todo = db.get(Todos, todo_id)
     if not todo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
     return todo
 
 
-@app.post("/api/todos")
-def create_todo(db: db_dependency, todo_request: TodoRequest):
+@app.post("/api/todos", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
+def create_todo(db: db_dependency, todo_model: TodoModel):
     # pydantic2ではdict()ではなく、model_dumpが使用されている
     # https://docs.pydantic.dev/latest/concepts/serialization/#modelmodel_dump
-    todo = TodoRequest(**todo_request.model_dump())
+    todo = Todos(**todo_model.model_dump())
     db.add(todo)
     db.commit()
+    # refreshをすることでauto-incrementしたIDやcreated_atが反映されるようになる
+    # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.refresh
+    db.refresh(todo)
+    return todo
+
+
+@app.put("/todo/{todo_id}", response_model=TodoResponse, status_code=status.HTTP_204_NO_CONTENT)
+async def update_todo(db: db_dependency ,todo_model: TodoModel, todo_id: int):
+    todo = db.get(Todos, todo_id)
+    if not todo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
+
+
+@app.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_todo(db: db_dependency, todo_id: int):
+    todo = db.get(Todos, todo_id)
+    if not todo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
