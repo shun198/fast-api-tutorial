@@ -13,6 +13,7 @@ app = FastAPI()
 # テーブルを作成
 Base.metadata.create_all(bind=engine)
 
+
 # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/?h=get_db
 async def get_db():
     db = SessionLocal()
@@ -41,7 +42,7 @@ def read_todos(db: db_dependency):
     # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#simple-select
     # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.scalars
     # scalarsを使うことでTodosのインスタンスを返す
-    todos =  db.scalars(select(Todos).order_by(Todos.id)).all()
+    todos = db.scalars(select(Todos).order_by(Todos.id)).all()
     return todos
 
 
@@ -49,11 +50,15 @@ def read_todos(db: db_dependency):
 def read_todo(db: db_dependency, todo_id: int):
     todo = db.get(Todos, todo_id)
     if not todo:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
+        )
     return todo
 
 
-@app.post("/api/todos", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
+@app.post(
+    "/api/todos", response_model=TodoResponse, status_code=status.HTTP_201_CREATED
+)
 def create_todo(db: db_dependency, todo_model: TodoModel):
     # pydantic2ではdict()ではなく、model_dumpが使用されている
     # https://docs.pydantic.dev/latest/concepts/serialization/#modelmodel_dump
@@ -68,11 +73,16 @@ def create_todo(db: db_dependency, todo_model: TodoModel):
 
 
 @app.put("/todo/{todo_id}", response_model=TodoResponse)
-async def update_todo(db: db_dependency ,todo_model: TodoModel, todo_id: int):
+async def update_todo(db: db_dependency, todo_model: TodoModel, todo_id: int):
     todo = db.get(Todos, todo_id)
     if not todo:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
-    db.execute(update(Todos).where(todo.id == todo_id).values(**todo_model.model_dump()))
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
+        )
+    # https://docs.sqlalchemy.org/en/20/core/dml.html#sqlalchemy.sql.expression.update
+    db.execute(
+        update(Todos).where(todo.id == todo_id).values(**todo_model.model_dump())
+    )
     db.commit()
     return todo
 
@@ -81,7 +91,9 @@ async def update_todo(db: db_dependency ,todo_model: TodoModel, todo_id: int):
 async def delete_todo(db: db_dependency, todo_id: int):
     todo = db.get(Todos, todo_id)
     if not todo:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
+        )
     # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.delete
     db.delete(todo)
     db.commit()
