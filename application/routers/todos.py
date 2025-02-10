@@ -7,7 +7,7 @@ from schemas import TodoModel, TodoResponse
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-router = APIRouter()
+router = APIRouter(prefix="/api/todos", tags=["todos"])
 
 
 # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/?h=get_db
@@ -28,7 +28,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/?h=get_db#sub-dependencies-with-yield
 # https://github.com/fastapi/fastapi/pull/9298
 # FastAPI0.95.0以降の機能
-@router.get("/api/todos", response_model=List[TodoResponse])
+@router.get("", response_model=List[TodoResponse])
 def read_todos(db: db_dependency):
     # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#simple-select
     # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.scalars
@@ -37,7 +37,7 @@ def read_todos(db: db_dependency):
     return todos
 
 
-@router.get("/api/todos/{todo_id}", response_model=TodoResponse)
+@router.get("/{todo_id}", response_model=TodoResponse)
 def read_todo(db: db_dependency, todo_id: int):
     todo = db.get(Todos, todo_id)
     if not todo:
@@ -47,9 +47,7 @@ def read_todo(db: db_dependency, todo_id: int):
     return todo
 
 
-@router.post(
-    "/api/todos", response_model=TodoResponse, status_code=status.HTTP_201_CREATED
-)
+@router.post("", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
 def create_todo(db: db_dependency, todo_model: TodoModel):
     # pydantic2ではdict()ではなく、model_dumpが使用されている
     # https://docs.pydantic.dev/latest/concepts/serialization/#modelmodel_dump
@@ -63,7 +61,7 @@ def create_todo(db: db_dependency, todo_model: TodoModel):
     return todo
 
 
-@router.put("/todo/{todo_id}", response_model=TodoResponse)
+@router.put("/{todo_id}", response_model=TodoResponse)
 async def update_todo(db: db_dependency, todo_model: TodoModel, todo_id: int):
     todo = db.get(Todos, todo_id)
     if not todo:
@@ -78,7 +76,7 @@ async def update_todo(db: db_dependency, todo_model: TodoModel, todo_id: int):
     return todo
 
 
-@router.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(db: db_dependency, todo_id: int):
     todo = db.get(Todos, todo_id)
     if not todo:
