@@ -3,6 +3,7 @@ from typing import Annotated, List
 from database import SessionLocal, engine
 from fastapi import Depends, FastAPI, HTTPException, status
 from models import Base, Todos
+from routers import auth
 from schemas import TodoModel, TodoResponse
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -12,7 +13,7 @@ app = FastAPI()
 # https://docs.sqlalchemy.org/en/20/core/metadata.html#sqlalchemy.schema.MetaData.create_all
 # テーブルを作成
 Base.metadata.create_all(bind=engine)
-
+app.include_router(auth.router)
 
 # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/?h=get_db
 async def get_db():
