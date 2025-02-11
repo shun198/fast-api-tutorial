@@ -15,13 +15,11 @@ from sqlalchemy.orm import Session
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 # https://fastapi.tiangolo.com/ja/tutorial/security/oauth2-jwt/#passlib
-# to get a string like this run:
-# openssl rand -hex 32
 SECRET_KEY = os.environ.get("SECRET_KEY")
 ALGORITHM = os.environ.get("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
-# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 
 def get_db():

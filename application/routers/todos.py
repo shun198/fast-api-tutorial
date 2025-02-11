@@ -3,6 +3,7 @@ from typing import Annotated, List
 from database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import Todos
+from routers.auth import get_current_user
 from schemas.todos import TodoModel, TodoResponse
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -23,22 +24,27 @@ async def get_db():
 # Annotatedを使うことでDepends(get_db)がSession型だとわかる
 # https://fastapi.tiangolo.com/tutorial/sql-databases/#create-a-session-dependency
 db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/?h=get_db#sub-dependencies-with-yield
 # https://github.com/fastapi/fastapi/pull/9298
 # FastAPI0.95.0以降の機能
 @router.get("", response_model=List[TodoResponse])
-async def read_todos(db: db_dependency):
+async def read_todos(user: user_dependency, db: db_dependency):
     # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#simple-select
     # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.scalars
     # scalarsを使うことでTodosのインスタンスを返す
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed')
     todos = db.scalars(select(Todos).order_by(Todos.id)).all()
     return todos
 
 
 @router.get("/{todo_id}", response_model=TodoResponse)
-async def read_todo(db: db_dependency, todo_id: int):
+async def read_todo(user: user_dependency, db: db_dependency, todo_id: int):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed')
     todo = db.get(Todos, todo_id)
     if not todo:
         raise HTTPException(
@@ -48,7 +54,9 @@ async def read_todo(db: db_dependency, todo_id: int):
 
 
 @router.post("", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
-async def create_todo(db: db_dependency, todo_model: TodoModel):
+async def create_todo(user: user_dependency, db: db_dependency, todo_model: TodoModel):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed')
     # pydantic2ではdict()ではなく、model_dumpが使用されている
     # https://docs.pydantic.dev/latest/concepts/serialization/#modelmodel_dump
     todo = Todos(**todo_model.model_dump())
@@ -62,7 +70,9 @@ async def create_todo(db: db_dependency, todo_model: TodoModel):
 
 
 @router.put("/{todo_id}", response_model=TodoResponse)
-async def update_todo(db: db_dependency, todo_model: TodoModel, todo_id: int):
+async def update_todo(user: user_dependency, db: db_dependency, todo_model: TodoModel, todo_id: int):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed')
     todo = db.get(Todos, todo_id)
     if not todo:
         raise HTTPException(
@@ -77,7 +87,9 @@ async def update_todo(db: db_dependency, todo_model: TodoModel, todo_id: int):
 
 
 @router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_todo(db: db_dependency, todo_id: int):
+async def delete_todo(user: user_dependency, db: db_dependency, todo_id: int):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed')
     todo = db.get(Todos, todo_id)
     if not todo:
         raise HTTPException(
