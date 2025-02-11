@@ -6,6 +6,7 @@ services:
       dockerfile: containers/postgres/Dockerfile
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./containers/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: pg_isready -U "${POSTGRES_USER:-postgres}" || exit 1
       interval: 10s
