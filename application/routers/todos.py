@@ -3,7 +3,7 @@ from typing import Annotated, List
 from database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import Todos
-from schemas import TodoModel, TodoResponse
+from schemas.todos import TodoModel, TodoResponse
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
@@ -29,7 +29,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 # https://github.com/fastapi/fastapi/pull/9298
 # FastAPI0.95.0以降の機能
 @router.get("", response_model=List[TodoResponse])
-def read_todos(db: db_dependency):
+async def read_todos(db: db_dependency):
     # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#simple-select
     # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.scalars
     # scalarsを使うことでTodosのインスタンスを返す
@@ -38,7 +38,7 @@ def read_todos(db: db_dependency):
 
 
 @router.get("/{todo_id}", response_model=TodoResponse)
-def read_todo(db: db_dependency, todo_id: int):
+async def read_todo(db: db_dependency, todo_id: int):
     todo = db.get(Todos, todo_id)
     if not todo:
         raise HTTPException(
@@ -48,7 +48,7 @@ def read_todo(db: db_dependency, todo_id: int):
 
 
 @router.post("", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
-def create_todo(db: db_dependency, todo_model: TodoModel):
+async def create_todo(db: db_dependency, todo_model: TodoModel):
     # pydantic2ではdict()ではなく、model_dumpが使用されている
     # https://docs.pydantic.dev/latest/concepts/serialization/#modelmodel_dump
     todo = Todos(**todo_model.model_dump())

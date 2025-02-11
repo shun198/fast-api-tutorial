@@ -1,8 +1,95 @@
-from fastapi import APIRouter
+import os
+from datetime import datetime, timedelta, timezone
+from typing import Annotated
+
+import bcrypt
+from database import SessionLocal
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import jwt
+from models import Users
+
+# from passlib.context import CryptContext
+from schemas.auth import CreateUserRequest, Token
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+# https://fastapi.tiangolo.com/ja/tutorial/security/oauth2-jwt/#passlib
+# to get a string like this run:
+# openssl rand -hex 32
+SECRET_KEY = os.environ.get("SECRET_KEY")
+ALGORITHM = os.environ.get("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
+# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-@router.get("/api/auth")
-async def get_user():
-    return {"user": "authenticate"}
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+db_dependency = Annotated[Session, Depends(get_db)]
+
+
+# https://github.com/pyca/bcrypt/issues/684
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
+    hashed_password = bcrypt.hashpw(
+        create_user_request.password.encode("utf-8"), bcrypt.gensalt()
+    ).decode("utf-8")
+    create_user_model = Users(
+        email=create_user_request.email,
+        username=create_user_request.username,
+        first_name=create_user_request.first_name,
+        last_name=create_user_request.last_name,
+        role=create_user_request.role,
+        password=hashed_password,
+        is_active=True,
+    )
+    db.add(create_user_model)
+    db.commit()
+    return {"msg": "user created"}
+
+
+def create_access_token(
+    username: str, user_id: int, role: str, expires_delta: timedelta
+):
+    encode = {"sub": username, "id": user_id, "role": role}
+    expires = datetime.now(timezone.utc) + expires_delta
+    encode.update({"exp": expires})
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def authenticate_user(username: str, password: str, db):
+    user = db.execute(
+        select(Users).where(Users.username == username)
+    ).scalar_one_or_none()
+    if not user:
+        return False
+    if not bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
+        return False
+    return user
+
+
+@router.post("/token")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency
+) -> Token:
+    user = authenticate_user(form_data.username, form_data.password, db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    token = create_access_token(
+        user.username, user.id, user.role, timedelta(minutes=30)
+    )
+
+    return {"access_token": token, "token_type": "bearer"}
