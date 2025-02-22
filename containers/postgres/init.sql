@@ -1,6 +1,5 @@
 -- 開発用ユーザとデータベース
 CREATE DATABASE dev_db;
-CREATE USER dev_user WITH PASSWORD 'password';
 GRANT ALL PRIVILEGES ON DATABASE dev_db TO dev_user;
 
 -- テスト用ユーザとデータベース
