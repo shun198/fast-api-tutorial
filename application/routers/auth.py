@@ -36,6 +36,17 @@ db_dependency = Annotated[Session, Depends(get_db)]
 # https://github.com/pyca/bcrypt/issues/684
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
+    # ユーザーが存在するか確認
+    user_with_existing_email = db.execute(
+        select(Users).where(Users.email == create_user_request.email)
+    ).scalar_one_or_none()
+    user_with_existing_username = db.execute(
+        select(Users).where(Users.username == create_user_request.username)
+    ).scalar_one_or_none()
+    if user_with_existing_email or user_with_existing_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists"
+        )
     hashed_password = bcrypt.hashpw(
         create_user_request.password.encode("utf-8"), bcrypt.gensalt()
     ).decode("utf-8")
@@ -103,7 +114,7 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     token = create_access_token(
-        user.username, user.id, user.role, timedelta(minutes=30)
+        user.username, user.id, user.role, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
     return {"access_token": token, "token_type": "bearer"}

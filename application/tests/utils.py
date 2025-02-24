@@ -4,8 +4,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ..database import Base
-from ..main import app
+from database import Base
+from main import app
 
 SQLALCHEMY_DATABASE_URL = os.environ.get("TEST_SQLALCHEMY_DATABASE_URL")
 
