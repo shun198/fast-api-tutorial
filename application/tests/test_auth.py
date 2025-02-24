@@ -1,11 +1,7 @@
 from datetime import timedelta
 
 from jose import jwt
-from main import app
-from routers.auth import ALGORITHM, SECRET_KEY, create_access_token, get_db
-from tests.utils import override_get_db
-
-app.dependency_overrides[get_db] = override_get_db
+from routers.auth import ALGORITHM, SECRET_KEY, create_access_token
 
 
 def test_create_access_token():
