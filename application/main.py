@@ -1,7 +1,7 @@
 import logging
 import traceback
 
-from fastapi import FastAPI, Request, status, Response
+from fastapi import FastAPI, Request, Response, status
 from routers import auth, todos
 from utils.slack import send_slack_notification
 
@@ -21,7 +21,7 @@ async def logging_middleware(request: Request, call_next):
 
     try:
         response = await call_next(request)
-    except Exception as e:
+    except Exception:
         response = Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         logger.error(f"Request: {method} {url} {response.status_code} ip: {client_ip}")
         send_slack_notification(traceback.format_exc())
