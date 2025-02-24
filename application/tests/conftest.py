@@ -26,7 +26,7 @@ def override_get_db():
 
 
 def override_get_current_user():
-    return {"username": "test_user", "id": 1}
+    return {"username": "test_user_01", "id": 1}
 
 
 @pytest.fixture

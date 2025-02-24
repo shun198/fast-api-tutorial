@@ -1,11 +1,12 @@
 from datetime import timedelta
+
 from fastapi import status
 from jose import jwt
 from routers.auth import ALGORITHM, SECRET_KEY, create_access_token
 
 
 def test_create_access_token():
-    username = "testuser"
+    username = "test_user_01"
     user_id = 1
     expires_delta = timedelta(hours=1)
 
