@@ -7,7 +7,7 @@ class CreateUserRequest(BaseModel):
     first_name: str
     last_name: str
     password: str
-    role: str
+    is_admin: str
     phone_number: str
 
 

@@ -12,7 +12,7 @@ class Users(Base):
     last_name = Column(String)
     password = Column(String)
     is_active = Column(Boolean, default=True)
-    role = Column(String)
+    is_admin = Column(Boolean, default=False)
     phone_number = Column(String)
 
 
