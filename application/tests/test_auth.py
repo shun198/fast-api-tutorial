@@ -12,7 +12,7 @@ def test_create_access_token():
     username = "testuser"
     user_id = 1
     role = "user"
-    expires_delta = timedelta(days=1)
+    expires_delta = timedelta(hours=1)
 
     token = create_access_token(username, user_id, role, expires_delta)
 
