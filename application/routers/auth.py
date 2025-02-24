@@ -64,9 +64,7 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     return {"msg": "user created"}
 
 
-def create_access_token(
-    username: str, user_id: int, expires_delta: timedelta
-):
+def create_access_token(username: str, user_id: int, expires_delta: timedelta):
     encode = {"sub": username, "id": user_id}
     expires = datetime.now(timezone.utc) + expires_delta
     encode.update({"exp": expires})
