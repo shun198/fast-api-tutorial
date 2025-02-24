@@ -15,6 +15,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 Base.metadata.create_all(bind=engine)
 
+
 def override_get_db():
     db = TestingSessionLocal()
     try:
@@ -22,7 +23,9 @@ def override_get_db():
     finally:
         db.close()
 
+
 def override_get_current_user():
-    return {'username': 'test_user', 'id': 1, 'user_role': 'admin'}
+    return {"username": "test_user", "id": 1, "user_role": "admin"}
+
 
 client = TestClient(app)
