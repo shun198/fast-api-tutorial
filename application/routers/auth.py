@@ -115,7 +115,7 @@ async def login_for_access_token(
     token = create_access_token(
         user.username,
         user.id,
-        timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)),
     )
 
     return {"access_token": token, "token_type": "bearer"}
