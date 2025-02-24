@@ -1,11 +1,8 @@
 import os
 
-from fastapi.testclient import TestClient
+from database import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
-from database import Base
-from main import app
 
 SQLALCHEMY_DATABASE_URL = os.environ.get("TEST_SQLALCHEMY_DATABASE_URL")
 
@@ -26,6 +23,3 @@ def override_get_db():
 
 def override_get_current_user():
     return {"username": "test_user", "id": 1, "user_role": "admin"}
-
-
-client = TestClient(app)
