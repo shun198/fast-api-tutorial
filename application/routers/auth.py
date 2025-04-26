@@ -7,11 +7,12 @@ from database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
+from jose.exceptions import ExpiredSignatureError
 from models import Users
-from schemas.auth import CreateUserRequest, Token
+from schemas.auth import CreateUserRequest, CurrentUser, Token
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -19,6 +20,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 SECRET_KEY = os.environ.get("SECRET_KEY")
 ALGORITHM = os.environ.get("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
+REFRESH_TOKEN_EXPIRE_DAYS = os.environ.get("REFRESH_TOKEN_EXPIRE_DAYS")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
@@ -47,6 +49,7 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
         last_name=create_user_request.last_name,
         is_admin=create_user_request.is_admin,
         password=hashed_password,
+        phone_number=create_user_request.phone_number,
         is_active=True,
     )
     try:
@@ -61,13 +64,6 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
         )
 
 
-def create_access_token(username: str, user_id: int, expires_delta: timedelta):
-    encode = {"sub": username, "id": user_id}
-    expires = datetime.now(timezone.utc) + expires_delta
-    encode.update({"exp": expires})
-    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
-
-
 def authenticate_user(username: str, password: str, db):
     user = db.execute(
         select(Users).where(Users.username == username)
@@ -79,24 +75,40 @@ def authenticate_user(username: str, password: str, db):
     return user
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> CurrentUser:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        user_id: int = payload.get("id")
-        if username is None or user_id is None:
+        user_id: int = payload.get("iss")
+        if not username or not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate user.",
             )
-        return {"username": username, "id": user_id}
+        return CurrentUser(username=username, id=user_id)
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired"
+        )
     except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user."
         )
 
 
-@router.post("/token")
+def create_jwt_token(username: str, user_id: int, expires_delta: timedelta):
+    encode = {"sub": username, "iss": user_id}
+    expires = datetime.now(timezone.utc) + expires_delta
+    encode.update({"exp": expires})
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+# OAuthを使って認証
+@router.post("/login")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency
 ) -> Token:
@@ -107,10 +119,48 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = create_access_token(
+    access_token = create_jwt_token(
         user.username,
         user.id,
         timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)),
     )
+    refresh_token = create_jwt_token(
+        user.username,
+        user.id,
+        timedelta(days=int(REFRESH_TOKEN_EXPIRE_DAYS)),
+    )
 
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
+
+
+@router.post("/refresh")
+async def refresh_token(db: db_dependency, refresh_token: str):
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        user_id: int = payload.get("iss")
+        if not username or not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+            )
+        user = db.execute(
+            select(Users).where(Users.username == username)
+        ).scalar_one_or_none()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
+            )
+        new_access_token = create_jwt_token(
+            user.username,
+            user.id,
+            timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)),
+        )
+        return {"access_token": new_access_token, "token_type": "bearer"}
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
+        )

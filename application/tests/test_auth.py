@@ -2,22 +2,22 @@ from datetime import timedelta
 
 from fastapi import status
 from jose import jwt
-from routers.auth import ALGORITHM, SECRET_KEY, create_access_token
+from routers.auth import ALGORITHM, SECRET_KEY, create_jwt_token
 
 
-def test_create_access_token():
+def test_create_jwt_token():
     username = "test_user_01"
     user_id = 1
     expires_delta = timedelta(hours=1)
 
-    token = create_access_token(username, user_id, expires_delta)
+    token = create_jwt_token(username, user_id, expires_delta)
 
     decoded_token = jwt.decode(
         token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_signature": False}
     )
 
     assert decoded_token["sub"] == username
-    assert decoded_token["id"] == user_id
+    assert decoded_token["iss"] == user_id
 
 
 def test_create_user(client, test_user_one):

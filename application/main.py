@@ -9,9 +9,6 @@ logger = logging.getLogger("uvicorn")
 
 app = FastAPI()
 
-app.include_router(auth.router)
-app.include_router(todos.router)
-
 
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
@@ -27,6 +24,10 @@ async def logging_middleware(request: Request, call_next):
         send_slack_notification(traceback.format_exc())
     finally:
         return response
+
+
+app.include_router(auth.router)
+app.include_router(todos.router)
 
 
 @app.get("/api/health")
