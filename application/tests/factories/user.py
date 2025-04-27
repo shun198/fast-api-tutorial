@@ -1,6 +1,6 @@
 from factory import Faker, Sequence
 from factory.alchemy import SQLAlchemyModelFactory
-from conftest import TestingSessionLocal
+from tests.utils import TestingSessionLocal
 import bcrypt
 from models import Users
 
