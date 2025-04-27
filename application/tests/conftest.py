@@ -1,5 +1,17 @@
 import pytest
 
+from routers.auth import get_current_user, get_db
+from fastapi.testclient import TestClient
+from tests.utils import override_get_current_user, override_get_db
+from main import app
+
+@pytest.fixture
+def client():
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    client = TestClient(app)
+    yield client
+    
 
 @pytest.fixture
 def non_existing_user():

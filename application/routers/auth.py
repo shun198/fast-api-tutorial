@@ -164,3 +164,6 @@ async def refresh_token(db: db_dependency, refresh_token: str):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
         )
+
+# TODO: メール送信ロジックを作成
+# https://sabuhish.github.io/fastapi-mail/example/

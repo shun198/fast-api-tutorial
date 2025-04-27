@@ -4,8 +4,8 @@ from database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import Todos
 from routers.auth import get_current_user
-from schemas.todos import CreateTodoModel, UpdateTodoModel, TodoIsComplete, TodoResponse
-from sqlalchemy import select, update, delete
+from schemas.todos import CreateTodoModel, TodoIsComplete, TodoResponse, UpdateTodoModel
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/todos", tags=["todos"])
@@ -160,6 +160,9 @@ async def toggle_todo_complete(user: user_dependency, db: db_dependency, todo_mo
         )
     db.execute(
         update(Todos).where(Todos.id == todo_id, Todos.owner_id == user.id).values(**todo_model.model_dump())
-    )      
+    )
     db.commit()
     return todo
+
+# ファイルアップロード機能
+# https://github.com/minio/minio

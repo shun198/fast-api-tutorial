@@ -1,12 +1,10 @@
 import pytest
 
 from database import Base
-from fastapi.testclient import TestClient
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from models import Todos
-
-from main import app
+from models import Todos, Users
 
 
 SQLALCHEMY_DATABASE_URL = "postgresql://test_user:password@db:5432/test_db"
@@ -27,12 +25,19 @@ def override_get_db():
 
 
 def override_get_current_user():
-    return {"username": "test_user_01", "id": 1}
-
-
-# https://fastapi.tiangolo.com/tutorial/testing/
-# https://www.starlette.io/testclient/
-client = TestClient(app)
+    user = Users(
+        id=123,
+        email="test@example.com",
+        username="test_user01",
+        first_name="user_01",
+        last_name="test",
+        # test
+        password="$2b$12$7X5m1CKB6CeQRBWfIpoh5ODdLvECJG.YXvPQOwXX.y23hOoxz19P.",
+        is_active=True,
+        is_admin=True,
+        phone_number="08011112222",
+    )
+    return user
 
 
 @pytest.fixture
