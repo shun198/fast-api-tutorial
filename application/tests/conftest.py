@@ -1,7 +1,9 @@
 import bcrypt
 import pytest
 
-from routers.auth import get_current_user
+from datetime import timedelta
+
+from routers.auth import get_current_user, create_jwt_token
 from database import get_db
 from fastapi.testclient import TestClient
 from sqlalchemy import text
@@ -88,3 +90,11 @@ def test_todo_one():
         connection.commit()
         connection.execute(text("DELETE FROM users;"))
         connection.commit()
+
+
+@pytest.fixture
+def headers():
+    user = override_get_current_user()
+    jwt_token = create_jwt_token(user.username, user.id, timedelta(minutes=30))
+    headers = {"Authorization": f"Bearer {jwt_token}"}
+    return headers
