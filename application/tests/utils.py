@@ -1,19 +1,18 @@
-import pytest
-
 from database import Base
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Todos, Users
+from models import Users
+from sqlalchemy.pool import StaticPool
 
 
-SQLALCHEMY_DATABASE_URL = "postgresql://test_user:password@db:5432/test_db"
+TEST_SQLALCHEMY_DATABASE_URL = "postgresql://dev_user:password@db:5432/test_db"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+test_engine = create_engine(TEST_SQLALCHEMY_DATABASE_URL, poolclass=StaticPool)
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=test_engine)
 
 
 def override_get_db():
@@ -27,9 +26,9 @@ def override_get_db():
 def override_get_current_user():
     user = Users(
         id=123,
-        email="test@example.com",
-        username="test_user01",
-        first_name="user_01",
+        email="test_user_admin_01@example.com",
+        username="test_user_admin_01",
+        first_name="user_admin_01",
         last_name="test",
         # test
         password="$2b$12$7X5m1CKB6CeQRBWfIpoh5ODdLvECJG.YXvPQOwXX.y23hOoxz19P.",
@@ -38,21 +37,3 @@ def override_get_current_user():
         phone_number="08011112222",
     )
     return user
-
-
-@pytest.fixture
-def test_todo():
-    todo = Todos(
-        title="Learn to code!",
-        description="Need to learn everyday!",
-        priority=5,
-        complete=False,
-    )
-
-    db = TestingSessionLocal()
-    db.add(todo)
-    db.commit()
-    yield todo
-    with engine.connect() as connection:
-        connection.execute(text("DELETE FROM todos;"))
-        connection.commit()
