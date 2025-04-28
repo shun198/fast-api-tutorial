@@ -1,6 +1,6 @@
 from typing import Annotated, List
 
-from database import SessionLocal
+from database import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import Todos
 from routers.auth import get_current_user
@@ -9,15 +9,6 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/todos", tags=["todos"])
-
-
-# https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/?h=get_db
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # 依存性注入をすることでget_dbメソッドが自動的に呼ばるので毎回セッションインスタンスの生成やセッションを切る処理を書かずに済む
@@ -39,7 +30,11 @@ async def read_todos(user: user_dependency, db: db_dependency):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    todos = db.scalars(select(Todos).filter(Todos.owner_id == user.id, Todos.complete == False).order_by(Todos.id)).all()
+    todos = db.scalars(
+        select(Todos)
+        .filter(Todos.owner_id == user.id, Todos.complete == False)
+        .order_by(Todos.id)
+    ).all()
     return todos
 
 
@@ -49,7 +44,11 @@ async def read_completed_todos(user: user_dependency, db: db_dependency):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    todos = db.scalars(select(Todos).filter(Todos.owner_id == user.id, Todos.complete == True).order_by(Todos.id)).all()
+    todos = db.scalars(
+        select(Todos)
+        .filter(Todos.owner_id == user.id, Todos.complete == True)
+        .order_by(Todos.id)
+    ).all()
     return todos
 
 
@@ -59,7 +58,11 @@ async def read_todo(user: user_dependency, db: db_dependency, todo_id: int):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    todo = db.scalars(select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id, Todos.complete == False)).first()
+    todo = db.scalars(
+        select(Todos).filter(
+            Todos.id == todo_id, Todos.owner_id == user.id, Todos.complete == False
+        )
+    ).first()
     if not todo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
@@ -73,7 +76,10 @@ async def read_completed_todo(user: user_dependency, db: db_dependency, todo_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    todo = db.scalars(select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id), Todos.complete == True).first()
+    todo = db.scalars(
+        select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id),
+        Todos.complete == True,
+    ).first()
     if not todo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Completed todo not found"
@@ -82,7 +88,9 @@ async def read_completed_todo(user: user_dependency, db: db_dependency, todo_id:
 
 
 @router.post("", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
-async def create_todo(user: user_dependency, db: db_dependency, todo_model: CreateTodoModel):
+async def create_todo(
+    user: user_dependency, db: db_dependency, todo_model: CreateTodoModel
+):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
@@ -107,14 +115,18 @@ async def update_todo(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    todo = db.scalars(select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id)).first()
+    todo = db.scalars(
+        select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id)
+    ).first()
     if not todo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
         )
     # https://docs.sqlalchemy.org/en/20/core/dml.html#sqlalchemy.sql.expression.update
     db.execute(
-        update(Todos).where(Todos.id == todo_id, Todos.owner_id == user.id).values(**todo_model.model_dump())
+        update(Todos)
+        .where(Todos.id == todo_id, Todos.owner_id == user.id)
+        .values(**todo_model.model_dump())
     )
     db.commit()
     return todo
@@ -137,7 +149,9 @@ async def delete_todo(user: user_dependency, db: db_dependency, todo_id: int):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    todo = db.scalars(select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id)).first()
+    todo = db.scalars(
+        select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id)
+    ).first()
     if not todo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
@@ -147,22 +161,33 @@ async def delete_todo(user: user_dependency, db: db_dependency, todo_id: int):
     db.commit()
 
 
-@router.patch("/toggle_todo_complete/{todo_id}", status_code=status.HTTP_200_OK, response_model=TodoResponse)
-async def toggle_todo_complete(user: user_dependency, db: db_dependency, todo_model: TodoIsComplete, todo_id: int):
+@router.patch(
+    "/toggle_todo_complete/{todo_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=TodoResponse,
+)
+async def toggle_todo_complete(
+    user: user_dependency, db: db_dependency, todo_model: TodoIsComplete, todo_id: int
+):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    todo = db.scalars(select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id)).first()
+    todo = db.scalars(
+        select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id)
+    ).first()
     if not todo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
         )
     db.execute(
-        update(Todos).where(Todos.id == todo_id, Todos.owner_id == user.id).values(**todo_model.model_dump())
+        update(Todos)
+        .where(Todos.id == todo_id, Todos.owner_id == user.id)
+        .values(**todo_model.model_dump())
     )
     db.commit()
     return todo
+
 
 # ファイルアップロード機能
 # https://github.com/minio/minio
