@@ -29,12 +29,12 @@ def non_existing_user():
 
 
 @pytest.fixture
-def test_user_one():
+def test_admin_user_data():
     return {
-        "email": "test_user_01@example.com",
-        "username": "test_user_01",
+        "email": "test_admin_user_01@example.com",
+        "username": "test_admin_user_01",
         "first_name": "零一",
-        "last_name": "テストユーザ",
+        "last_name": "テスト管理ユーザ",
         "password": "test",
         "is_active": True,
         "is_admin": True,
