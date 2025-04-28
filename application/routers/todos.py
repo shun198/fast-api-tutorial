@@ -11,21 +11,12 @@ from sqlalchemy.orm import Session
 router = APIRouter(prefix="/api/todos", tags=["todos"])
 
 
-# 依存性注入をすることでget_dbメソッドが自動的に呼ばるので毎回セッションインスタンスの生成やセッションを切る処理を書かずに済む
-# Annotatedを使うことでDepends(get_db)がSession型だとわかる
-# https://fastapi.tiangolo.com/tutorial/sql-databases/#create-a-session-dependency
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
-# https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/?h=get_db#sub-dependencies-with-yield
-# https://github.com/fastapi/fastapi/pull/9298
-# FastAPI0.95.0以降の機能
 @router.get("", response_model=List[TodoResponse])
 async def read_todos(user: user_dependency, db: db_dependency):
-    # https://docs.sqlalchemy.org/en/20/orm/quickstart.html#simple-select
-    # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.scalars
-    # scalarsを使うことでTodosのインスタンスを返す
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
@@ -38,7 +29,7 @@ async def read_todos(user: user_dependency, db: db_dependency):
     return todos
 
 
-@router.get("", response_model=List[TodoResponse])
+@router.get("/completed", response_model=List[TodoResponse])
 async def read_completed_todos(user: user_dependency, db: db_dependency):
     if not user:
         raise HTTPException(
@@ -70,7 +61,7 @@ async def read_todo(user: user_dependency, db: db_dependency, todo_id: int):
     return todo
 
 
-@router.get("/{todo_id}", response_model=TodoResponse)
+@router.get("/completed/{todo_id}", response_model=TodoResponse)
 async def read_completed_todo(user: user_dependency, db: db_dependency, todo_id: int):
     if not user:
         raise HTTPException(
@@ -95,14 +86,9 @@ async def create_todo(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    # pydantic2ではdict()ではなく、model_dumpが使用されている
-    # https://docs.pydantic.dev/latest/concepts/serialization/#modelmodel_dump
     todo = Todos(**todo_model.model_dump(), owner_id=user.id)
-    # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.add
     db.add(todo)
     db.commit()
-    # # refreshをすることでauto-incrementしたIDやcreated_atが反映されるようになる
-    # # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.refresh
     db.refresh(todo)
     return todo
 
@@ -122,7 +108,6 @@ async def update_todo(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
         )
-    # https://docs.sqlalchemy.org/en/20/core/dml.html#sqlalchemy.sql.expression.update
     db.execute(
         update(Todos)
         .where(Todos.id == todo_id, Todos.owner_id == user.id)
@@ -138,7 +123,6 @@ async def bulk_delete_todo(user: user_dependency, db: db_dependency):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.delete
     db.execute(delete(Todos).where(Todos.owner_id == user.id))
     db.commit()
 
@@ -156,7 +140,6 @@ async def delete_todo(user: user_dependency, db: db_dependency, todo_id: int):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found"
         )
-    # https://docs.sqlalchemy.org/en/20/orm/session_api.html#sqlalchemy.orm.Session.delete
     db.delete(todo)
     db.commit()
 

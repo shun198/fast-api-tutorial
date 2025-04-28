@@ -16,7 +16,6 @@ from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-# https://fastapi.tiangolo.com/ja/tutorial/security/oauth2-jwt/#passlib
 SECRET_KEY = os.environ.get("SECRET_KEY")
 ALGORITHM = os.environ.get("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
@@ -28,7 +27,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-# https://github.com/pyca/bcrypt/issues/684
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
     hashed_password = bcrypt.hashpw(
