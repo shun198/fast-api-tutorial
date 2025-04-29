@@ -34,9 +34,41 @@ def test_get_current_user():
     pass
 
 
+def test_get_current_user_invalid_username():
+    pass
+
+
+def test_get_current_user_invalid_user_id():
+    pass
+
+
+def test_get_current_user_invalid_user_id():
+    pass
+
+
+def test_get_current_user_token_expired():
+    pass
+
+
+def test_get_current_user_token_invalid_jwt():
+    pass
+
+
 def test_login_for_access_token():
     pass
 
 
+def test_login_for_access_token_invalid_username():
+    pass
+
+
+def test_login_for_access_token_invalid_password():
+    pass
+
+
 def test_refresh_token():
+    pass
+
+
+def test_refresh_token_user_not_found():
     pass

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import bcrypt
-from database import get_db
+from database import db_dependency
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -12,7 +12,6 @@ from models import Users
 from schemas.auth import CreateUserRequest, CurrentUser, Token
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -22,9 +21,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
 REFRESH_TOKEN_EXPIRE_DAYS = os.environ.get("REFRESH_TOKEN_EXPIRE_DAYS")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
-
-
-db_dependency = Annotated[Session, Depends(get_db)]
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -76,18 +72,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> CurrentUser:
                 detail="Could not validate user.",
             )
         return CurrentUser(username=username, id=user_id)
-    except ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired"
-        )
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-        )
     except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user."
-        )
+        return None
 
 
 def create_jwt_token(username: str, user_id: int, expires_delta: timedelta):
