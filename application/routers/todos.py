@@ -1,7 +1,7 @@
 from typing import Annotated, List
 
-from database import db_dependency
 from fastapi import APIRouter, Depends, HTTPException, status
+from infrastructure.database import db_dependency
 from models import Todos
 from routers.auth import get_current_user
 from schemas.todos import CreateTodoModel, TodoIsComplete, TodoResponse, UpdateTodoModel

@@ -4,7 +4,7 @@ import pytest
 from datetime import timedelta
 
 from routers.auth import get_current_user, create_jwt_token
-from database import get_db
+from infrastructure.database import get_db
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from tests.utils import (

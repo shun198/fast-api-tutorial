@@ -3,9 +3,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import bcrypt
-from database import db_dependency
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from infrastructure.database import db_dependency
 from jose import JWTError, jwt
 from models import Users
 from schemas.auth import CreateUserRequest, CurrentUser, Token

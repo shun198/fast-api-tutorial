@@ -1,5 +1,5 @@
 import bcrypt
-from database import Base
+from infrastructure.database import Base
 from models import Users
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
