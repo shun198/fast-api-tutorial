@@ -8,7 +8,12 @@ from config.jwt import check_password, create_jwt_token, decode_jwt_token
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
-from schemas.requests.auth_request_schema import CreateUserRequest, TokenRequest
+from schemas.requests.auth_request_schema import (
+    CreateUserRequest,
+    TokenRequest,
+    RefreshTokenRequest,
+)
+from schemas.responses.auth_response_schema import TokenResponse
 from usecases.user_usercase import UserUsecase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -61,7 +66,7 @@ async def login_for_access_token(
     refresh_token = create_jwt_token(
         user.username,
         user.id,
-        timedelta(minutes=app_settings.REFRESH_TOKEN_EXPIRE_DAYS),
+        timedelta(days=app_settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
 
     return TokenRequest(
@@ -73,10 +78,13 @@ async def login_for_access_token(
 
 @router.post("/refresh")
 async def refresh_token(
-    refresh_token: str, user_usecase: UserUsecase = Depends(get_user_usecase)
-):
+    refresh_token_request: RefreshTokenRequest,
+    user_usecase: UserUsecase = Depends(get_user_usecase),
+) -> TokenResponse:
     try:
-        decoded_token = decode_jwt_token(refresh_token)
+        decoded_token = decode_jwt_token(
+            refresh_token_request.model_dump()["refresh_token"]
+        )
         username: str = decoded_token.get("sub")
         user_id: int = decoded_token.get("iss")
         if not username or not user_id:
@@ -93,7 +101,10 @@ async def refresh_token(
             user.id,
             timedelta(minutes=app_settings.ACCESS_TOKEN_EXPIRE_MINUTES),
         )
-        return {"access_token": new_access_token, "token_type": "bearer"}
+        return TokenResponse(
+            access_token=new_access_token,
+            token_type="bearer",
+        )
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"

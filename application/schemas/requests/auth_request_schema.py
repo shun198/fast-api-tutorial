@@ -17,6 +17,10 @@ class TokenRequest(BaseModel):
     token_type: str
 
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
 class CurrentUserRequest(BaseModel):
     username: str
     id: int

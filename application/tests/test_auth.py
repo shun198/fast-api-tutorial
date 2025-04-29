@@ -2,12 +2,13 @@ from datetime import timedelta
 
 from fastapi import status
 from config.jwt import create_jwt_token, decode_jwt_token
+from config.env import app_settings
 
 
 def test_create_jwt_token():
     username = "test_user_01"
     user_id = 1
-    expires_delta = timedelta(minutes=30)
+    expires_delta = timedelta(minutes=app_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     token = create_jwt_token(username, user_id, expires_delta)
 
