@@ -25,6 +25,7 @@ async def logging_middleware(request: Request, call_next):
     finally:
         return response
 
+# TODO: cors middleware
 
 app.include_router(auth.router)
 app.include_router(todos.router)

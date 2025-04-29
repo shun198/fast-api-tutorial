@@ -7,7 +7,6 @@ from database import db_dependency
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from jose.exceptions import ExpiredSignatureError
 from models import Users
 from schemas.auth import CreateUserRequest, CurrentUser, Token
 from sqlalchemy import select
@@ -23,7 +22,7 @@ REFRESH_TOKEN_EXPIRE_DAYS = os.environ.get("REFRESH_TOKEN_EXPIRE_DAYS")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("/sign-up", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
     hashed_password = bcrypt.hashpw(
         create_user_request.password.encode("utf-8"), bcrypt.gensalt()
