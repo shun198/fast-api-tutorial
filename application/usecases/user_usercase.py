@@ -1,6 +1,6 @@
 from models.user import Users
 from repositories.user_repository import UserRepository
-from schemas.auth_schema import CreateUserRequest
+from schemas.requests.auth_request_schema import CreateUserRequest
 
 
 class UserUsecase:

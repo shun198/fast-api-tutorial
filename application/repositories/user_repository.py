@@ -2,7 +2,7 @@ from models.user import Users
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from schemas.auth_schema import CreateUserRequest
+from schemas.requests.auth_request_schema import CreateUserRequest
 
 
 class UserRepository:

@@ -11,12 +11,12 @@ class CreateUserRequest(BaseModel):
     phone_number: str
 
 
-class Token(BaseModel):
+class TokenRequest(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
 
 
-class CurrentUser(BaseModel):
+class CurrentUserRequest(BaseModel):
     username: str
     id: int

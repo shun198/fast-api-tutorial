@@ -8,8 +8,7 @@ from config.jwt import create_jwt_token, decode_jwt_token
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
-from schemas.auth_schema import Token
-from schemas.requests.auth_request_schema import CreateUserRequest
+from schemas.requests.auth_request_schema import CreateUserRequest, TokenRequest
 
 from usecases.user_usercase import UserUsecase
 
@@ -48,7 +47,7 @@ def _authenticate_user(
 @router.post("/login")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-) -> Token:
+) -> TokenRequest:
     user = _authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -67,11 +66,11 @@ async def login_for_access_token(
         timedelta(minutes=app_settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
 
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer",
-    }
+    return TokenRequest(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+    )
 
 
 @router.post("/refresh")

@@ -2,7 +2,8 @@ from typing import List
 
 from config.dependency import db_dependency, get_todo_usecase, user_dependency
 from fastapi import APIRouter, Depends, HTTPException, status
-from schemas.todo_schema import CreateTodoModel, TodoResponse, UpdateTodoModel
+from schemas.requests.todo_request_schema import CreateTodoRequest, UpdateTodoRequest
+from schemas.responses.todo_response_schema import TodoResponse
 from usecases.todo_usecase import TodoUsecase
 
 router = APIRouter(prefix="/api/todos", tags=["todos"])
@@ -40,7 +41,7 @@ async def read_todo(
 @router.post("", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
 async def create_todo(
     user: user_dependency,
-    todo_model: CreateTodoModel,
+    todo_model: CreateTodoRequest,
     todo_usecase: TodoUsecase = Depends(get_todo_usecase),
 ):
     if not user:
@@ -54,7 +55,7 @@ async def create_todo(
 async def update_todo(
     user: user_dependency,
     db: db_dependency,
-    todo_model: UpdateTodoModel,
+    todo_model: UpdateTodoRequest,
     todo_id: int,
     todo_usecase: TodoUsecase = Depends(get_todo_usecase),
 ):

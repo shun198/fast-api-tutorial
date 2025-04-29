@@ -8,7 +8,7 @@ from repositories.user_repository import UserRepository
 from sqlalchemy.orm import Session
 from usecases.todo_usecase import TodoUsecase
 from usecases.user_usercase import UserUsecase
-from schemas.auth_schema import CurrentUser
+from schemas.requests.auth_request_schema import CurrentUserRequest
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -24,14 +24,14 @@ def get_user_usecase(db: Session = Depends(get_db)) -> UserUsecase:
     return UserUsecase(user_repository)
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> CurrentUser:
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> CurrentUserRequest:
     try:
         decoded_token = decode_jwt_token(token)
         username: str = decoded_token.get("sub")
         user_id: int = decoded_token.get("iss")
         if not username or not user_id:
             return None
-        return CurrentUser(username=username, id=user_id)
+        return CurrentUserRequest(username=username, id=user_id)
     except Exception:
         return None
 
