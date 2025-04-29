@@ -6,6 +6,7 @@ from models import Todos
 from routers.auth import get_current_user
 from schemas.todos import CreateTodoModel, TodoIsComplete, TodoResponse, UpdateTodoModel
 from sqlalchemy import delete, select, update
+from usercases.todo_usecase import TodoUsecase
 
 router = APIRouter(prefix="/api/todos", tags=["todos"])
 
@@ -14,17 +15,12 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 @router.get("", response_model=List[TodoResponse])
-async def read_todos(user: user_dependency, db: db_dependency):
+async def read_todos(user: user_dependency, db: db_dependency, todo_usecase: TodoUsecase):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"
         )
-    todos = db.scalars(
-        select(Todos)
-        .filter(Todos.owner_id == user.id, Todos.complete == False)
-        .order_by(Todos.id)
-    ).all()
-    return todos
+    return todo_usecase.get_all_todos(user)
 
 
 @router.get("/completed", response_model=List[TodoResponse])

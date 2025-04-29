@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from infrastructure.database import db_dependency
 from jose import JWTError, jwt
 from models import Users
-from schemas.auth import CreateUserRequest, CurrentUser, Token
+from schemas.auth_schema import CreateUserRequest, CurrentUser, Token
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
