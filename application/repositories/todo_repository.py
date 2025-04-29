@@ -1,16 +1,17 @@
-from typing import List
-
 from models.todo import Todos
 from models.user import Users
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from abc import ABC
 
 
-class TodoRepository:
+class AbstractTodoRepository(ABC):
     def __init__(self, db: Session):
         self.db = db
 
-    def find_all(self, user: Users) -> List[Todos]:
+
+class TodoRepository(AbstractTodoRepository):
+    def find_all(self, user: Users) -> Todos:
         todos = self.db.scalars(
             select(Todos)
             .filter(Todos.owner_id == user.id, Todos.complete == False)
