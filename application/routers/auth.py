@@ -1,10 +1,9 @@
 from datetime import timedelta
 from typing import Annotated
 
-import bcrypt
 from config.dependency import get_user_usecase
 from config.env import app_settings
-from config.jwt import check_password, create_jwt_token, decode_jwt_token
+from config.jwt import check_password, create_jwt_token, decode_jwt_token, hash_password
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
@@ -24,9 +23,7 @@ async def create_user(
     create_user_request: CreateUserRequest,
     user_usecase: UserUsecase = Depends(get_user_usecase),
 ):
-    hashed_password = bcrypt.hashpw(
-        create_user_request.password.encode("utf-8"), bcrypt.gensalt()
-    ).decode("utf-8")
+    hashed_password = hash_password(create_user_request.password)
     user = user_usecase.create_user(hashed_password, create_user_request)
     if not user:
         raise HTTPException(

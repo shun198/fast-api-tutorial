@@ -1,4 +1,4 @@
-import bcrypt
+from config.jwt import hash_password
 from infrastructure.database import Base
 from models.user import Users
 from sqlalchemy import create_engine
@@ -29,9 +29,7 @@ def override_get_current_user():
         username="test_user_admin_01",
         first_name="user_admin_01",
         last_name="test",
-        password=bcrypt.hashpw(("test").encode("utf-8"), bcrypt.gensalt()).decode(
-            "utf-8"
-        ),
+        password=hash_password("test"),
         is_active=True,
         is_admin=True,
         phone_number="08011112222",

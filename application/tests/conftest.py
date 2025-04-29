@@ -1,12 +1,11 @@
 from datetime import timedelta
 
-import bcrypt
 import pytest
 from fastapi.testclient import TestClient
 from main import app
 from models.todo import Todos
 from models.user import Users
-from config.jwt import create_jwt_token
+from config.jwt import create_jwt_token, hash_password
 from config.dependency import get_current_user
 from sqlalchemy import text
 from tests.utils import (
@@ -54,9 +53,7 @@ def test_user_one():
         email="test_user_01@example.com",
         first_name="零一",
         last_name="テストユーザ",
-        password=bcrypt.hashpw(("test").encode("utf-8"), bcrypt.gensalt()).decode(
-            "utf-8"
-        ),
+        password=hash_password("test"),
         is_active=True,
         is_admin=True,
         phone_number="08011112222",

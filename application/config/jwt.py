@@ -23,3 +23,10 @@ def decode_jwt_token(token: str):
 
 def check_password(raw_password, hashed_password) -> bool:
     return bcrypt.checkpw(raw_password.encode("utf-8"), hashed_password.encode("utf-8"))
+
+
+def hash_password(password: str):
+    hashed_password = bcrypt.hashpw(
+        password.encode("utf-8"), bcrypt.gensalt()
+    ).decode("utf-8")
+    return hashed_password
