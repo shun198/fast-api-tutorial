@@ -20,7 +20,3 @@ class TodoResponse(BaseModel):
     priority: int = Field(gt=0, lt=6)
     complete: bool
     owner_id: int
-
-
-class TodoIsComplete(BaseModel):
-    complete: bool
