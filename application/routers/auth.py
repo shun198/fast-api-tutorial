@@ -4,12 +4,11 @@ from typing import Annotated
 import bcrypt
 from config.dependency import get_user_usecase
 from config.env import app_settings
-from config.jwt import create_jwt_token, decode_jwt_token
+from config.jwt import check_password, create_jwt_token, decode_jwt_token
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
 from schemas.requests.auth_request_schema import CreateUserRequest, TokenRequest
-
 from usecases.user_usercase import UserUsecase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -32,13 +31,11 @@ async def create_user(
     return {"msg": "user created"}
 
 
-def _authenticate_user(
-    username: str, password: str, user_usecase: UserUsecase = Depends(get_user_usecase)
-):
+def _authenticate_user(username: str, password: str, user_usecase: UserUsecase):
     user = user_usecase.get_user_by_username(username)
     if not user:
         return False
-    if not bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
+    if not check_password(password, user.password):
         return False
     return user
 
@@ -47,8 +44,9 @@ def _authenticate_user(
 @router.post("/login")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    user_usecase: UserUsecase = Depends(get_user_usecase),
 ) -> TokenRequest:
-    user = _authenticate_user(form_data.username, form_data.password)
+    user = _authenticate_user(form_data.username, form_data.password, user_usecase)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

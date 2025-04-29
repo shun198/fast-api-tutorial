@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from jose import jwt
 
+import bcrypt
 from config.env import app_settings
+from jose import jwt
 
 
 def create_jwt_token(username: str, user_id: int, expires_delta: timedelta) -> str:
@@ -18,3 +19,7 @@ def decode_jwt_token(token: str):
         algorithms=[app_settings.ALGORITHM],
     )
     return decoded_token
+
+
+def check_password(raw_password, hashed_password) -> bool:
+    return bcrypt.checkpw(raw_password.encode("utf-8"), hashed_password.encode("utf-8"))
