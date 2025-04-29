@@ -2,8 +2,8 @@ import logging
 import traceback
 
 from fastapi import FastAPI, Request, Response, status
+from infrastructure.slack import send_slack_notification
 from routers import auth, todos
-from utils.slack import send_slack_notification
 
 logger = logging.getLogger("uvicorn")
 
@@ -24,6 +24,7 @@ async def logging_middleware(request: Request, call_next):
         send_slack_notification(traceback.format_exc())
     finally:
         return response
+
 
 # TODO: cors middleware
 
