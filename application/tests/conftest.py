@@ -1,20 +1,21 @@
-import bcrypt
-import pytest
-
 from datetime import timedelta
 
-from routers.auth import get_current_user, create_jwt_token
-from infrastructure.database import get_db
+import bcrypt
+import pytest
 from fastapi.testclient import TestClient
+from main import app
+from models.todo import Todos
+from models.user import Users
+from routers.auth import create_jwt_token, get_current_user
 from sqlalchemy import text
 from tests.utils import (
+    TestingSessionLocal,
     override_get_current_user,
     override_get_db,
-    TestingSessionLocal,
     test_engine,
 )
-from models import Todos, Users
-from main import app
+
+from infrastructure.database import get_db
 
 
 @pytest.fixture

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from infrastructure.database import db_dependency
 from jose import JWTError, jwt
-from models import Users
+from models.user import Users
 from schemas.auth_schema import CreateUserRequest, CurrentUser, Token
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -66,10 +66,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> CurrentUser:
         username: str = payload.get("sub")
         user_id: int = payload.get("iss")
         if not username or not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate user.",
-            )
+            return None
         return CurrentUser(username=username, id=user_id)
     except Exception:
         return None

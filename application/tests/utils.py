@@ -1,6 +1,6 @@
 import bcrypt
 from infrastructure.database import Base
-from models import Users
+from models.user import Users
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool

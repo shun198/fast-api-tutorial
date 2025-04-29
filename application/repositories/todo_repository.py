@@ -1,6 +1,7 @@
 from typing import List
 
-from models import Todos, Users
+from models.todo import Todos
+from models.user import Users
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 

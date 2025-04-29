@@ -1,4 +1,4 @@
-from models import Users
+from models.user import Users
 from repositories.todo_repository import TodoRepository
 
 

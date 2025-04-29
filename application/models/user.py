@@ -1,5 +1,5 @@
 from infrastructure.database import Base
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 
 
 class Users(Base):
@@ -14,14 +14,3 @@ class Users(Base):
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
     phone_number = Column(String)
-
-
-class Todos(Base):
-    __tablename__ = "todos"
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String)
-    description = Column(String)
-    priority = Column(Integer)
-    complete = Column(Boolean, default=False)
-    owner_id = Column(Integer, ForeignKey("users.id"))
