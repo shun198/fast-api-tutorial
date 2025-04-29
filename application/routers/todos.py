@@ -80,7 +80,10 @@ async def update_todo(
 
 
 @router.delete("/bulk_delete", status_code=status.HTTP_204_NO_CONTENT)
-async def bulk_delete_todo(user: user_dependency, todo_usecase: TodoUsecase = Depends(get_todo_usecase),):
+async def bulk_delete_todo(
+    user: user_dependency,
+    todo_usecase: TodoUsecase = Depends(get_todo_usecase),
+):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed"

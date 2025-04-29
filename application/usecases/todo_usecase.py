@@ -1,10 +1,8 @@
 from models.todo import Todos
 from models.user import Users
 from repositories.todo_repository import TodoRepository
-from schemas.todo_schema import (
-    CreateTodoModel,
-    UpdateTodoModel,
-)
+from schemas.todo_schema import CreateTodoModel, UpdateTodoModel
+
 
 class TodoUsecase:
     def __init__(self, todo_repository: TodoRepository):
@@ -18,10 +16,12 @@ class TodoUsecase:
 
     def create_todo(self, user: Users, todo_model: CreateTodoModel) -> Todos:
         return self.todo_repository.create(user, todo_model)
-    
-    def update_todo(self, user: Users, todo_model: UpdateTodoModel, todo: Todos) -> Todos:
-        return self.todo_repository.update(user,todo_model, todo)
-    
+
+    def update_todo(
+        self, user: Users, todo_model: UpdateTodoModel, todo: Todos
+    ) -> Todos:
+        return self.todo_repository.update(user, todo_model, todo)
+
     def delete_todo(self, todo_id: Todos):
         return self.todo_repository.delete(todo_id)
 
