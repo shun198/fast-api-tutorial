@@ -1,9 +1,7 @@
 import os
 
-from fastapi import Depends
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
-from typing import Annotated
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 SQLALCHEMY_DATABASE_URL = os.environ.get("SQLALCHEMY_DATABASE_URL")
 
@@ -22,6 +20,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-db_dependency = Annotated[Session, Depends(get_db)]

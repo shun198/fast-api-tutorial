@@ -1,7 +1,7 @@
 import pytest
 
 from fastapi import status
-from routers.auth import get_current_user
+from config.dependency import get_current_user
 from main import app
 
 

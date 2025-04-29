@@ -11,7 +11,7 @@ class TodoUsecase:
     def get_all_todos(self, user: Users) -> list[Todos]:
         return self.todo_repository.find_all(user)
 
-    def read_todo(self, user: Users, todo_id: int) -> Todos:
+    def read_todo(self, user: Users, todo_id: int) -> Todos | None:
         return self.todo_repository.find_one(user, todo_id)
 
     def create_todo(self, user: Users, todo_model: CreateTodoModel) -> Todos:

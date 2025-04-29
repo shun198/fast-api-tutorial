@@ -1,20 +1,11 @@
-from typing import Annotated, List
+from typing import List
 
-from config.depencency import get_todo_usecase
+from config.dependency import db_dependency, get_todo_usecase, user_dependency
 from fastapi import APIRouter, Depends, HTTPException, status
-from infrastructure.database import db_dependency
-from routers.auth import get_current_user
-from schemas.todo_schema import (
-    CreateTodoModel,
-    TodoResponse,
-    UpdateTodoModel,
-)
+from schemas.todo_schema import CreateTodoModel, TodoResponse, UpdateTodoModel
 from usecases.todo_usecase import TodoUsecase
 
 router = APIRouter(prefix="/api/todos", tags=["todos"])
-
-
-user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 @router.get("", response_model=List[TodoResponse])

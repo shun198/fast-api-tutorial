@@ -6,7 +6,8 @@ from fastapi.testclient import TestClient
 from main import app
 from models.todo import Todos
 from models.user import Users
-from routers.auth import create_jwt_token, get_current_user
+from config.jwt import create_jwt_token
+from config.dependency import get_current_user
 from sqlalchemy import text
 from tests.utils import (
     TestingSessionLocal,

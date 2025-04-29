@@ -2,19 +2,16 @@ from models.todo import Todos
 from models.user import Users
 from sqlalchemy import select, update, delete
 from sqlalchemy.orm import Session
-from abc import ABC
 from schemas.todo_schema import (
     CreateTodoModel,
     UpdateTodoModel,
 )
 
 
-class AbstractTodoRepository(ABC):
+class TodoRepository:
     def __init__(self, db: Session):
         self.db = db
 
-
-class TodoRepository(AbstractTodoRepository):
     def find_all(self, user: Users) -> list[Todos]:
         todos = self.db.scalars(
             select(Todos)
@@ -23,7 +20,7 @@ class TodoRepository(AbstractTodoRepository):
         ).all()
         return todos
 
-    def find_one(self, user: Users, todo_id: int) -> Todos:
+    def find_one(self, user: Users, todo_id: int) -> Todos | None:
         todo = self.db.scalars(
             select(Todos).filter(
                 Todos.id == todo_id, Todos.owner_id == user.id, Todos.complete == False
