@@ -9,11 +9,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
 from schemas.requests.auth_request_schema import (
     CreateUserRequest,
-    TokenRequest,
     RefreshTokenRequest,
+    TokenRequest,
 )
 from schemas.responses.auth_response_schema import TokenResponse
-from usecases.user_usercase import UserUsecase
+
+from application.usecases.user_usecase import UserUsecase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
