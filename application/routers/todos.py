@@ -1,6 +1,6 @@
 from typing import List
 
-from config.dependency import db_dependency, get_todo_usecase, user_dependency
+from config.dependency import get_todo_usecase, user_dependency
 from fastapi import APIRouter, Depends, HTTPException, status
 from schemas.requests.todo_request_schema import CreateTodoRequest, UpdateTodoRequest
 from schemas.responses.todo_response_schema import TodoResponse
@@ -54,7 +54,6 @@ async def create_todo(
 @router.put("/{todo_id}", response_model=TodoResponse)
 async def update_todo(
     user: user_dependency,
-    db: db_dependency,
     todo_model: UpdateTodoRequest,
     todo_id: int,
     todo_usecase: TodoUsecase = Depends(get_todo_usecase),
