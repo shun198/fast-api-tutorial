@@ -26,7 +26,7 @@ def check_password(raw_password, hashed_password) -> bool:
 
 
 def hash_password(password: str):
-    hashed_password = bcrypt.hashpw(
-        password.encode("utf-8"), bcrypt.gensalt()
-    ).decode("utf-8")
+    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode(
+        "utf-8"
+    )
     return hashed_password
