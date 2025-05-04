@@ -1,15 +1,16 @@
 from typing import Annotated
-from fastapi import Depends
+
 from config.jwt import decode_jwt_token
-from infrastructure.database import get_db
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from infrastructure.database import get_db
 from repositories.todo_repository import TodoRepository
 from repositories.user_repository import UserRepository
+from schemas.requests.auth_request_schema import CurrentUserRequest
 from sqlalchemy.orm import Session
 from usecases.todo_usecase import TodoUsecase
-from usecases.user_usercase import UserUsecase
-from schemas.requests.auth_request_schema import CurrentUserRequest
 
+from application.usecases.user_usecase import UserUsecase
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
