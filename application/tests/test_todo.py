@@ -1,5 +1,5 @@
 import pytest
-from config.dependency import get_current_user
+from config.dependency import get_current_user_from_cookie
 from fastapi import status
 from main import app
 
@@ -40,7 +40,7 @@ def test_list_todos(client, headers, test_todo_one):
 
 
 def test_list_todos_unauthorized(client):
-    app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_current_user_from_cookie, None)
     response = client.get("/api/todos")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -65,7 +65,7 @@ def test_read_todo_not_found(client, headers, non_existing_user):
 
 
 def test_read_todos_unauthorized(client, test_todo_one):
-    app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_current_user_from_cookie, None)
     response = client.get(f"/api/todos/{test_todo_one.id}")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -79,7 +79,7 @@ def test_create_todo(client, headers, create_data, test_todo_one):
 
 
 def test_create_todos_unauthorized(client, create_data):
-    app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_current_user_from_cookie, None)
     response = client.post(f"/api/todos/", json=create_data)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -103,7 +103,7 @@ def test_update_todo_not_found(client, headers, update_data, non_existing_user):
 
 
 def test_update_todos_unauthorized(client, update_data, test_todo_one):
-    app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_current_user_from_cookie, None)
     response = client.put(f"/api/todos/{test_todo_one.id}", json=update_data)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -120,6 +120,6 @@ def test_delete_todo_not_found(client, headers, non_existing_user):
 
 
 def test_delete_todo_unauthorized(client, test_todo_one):
-    app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_current_user_from_cookie, None)
     response = client.delete(f"/api/todos/{test_todo_one.id}")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED

@@ -11,3 +11,5 @@ class UpdateTodoRequest(BaseModel):
 class CreateTodoRequest(BaseModel):
     title: str = Field(min_length=3)
     description: str = Field(min_length=3, max_length=100)
+    is_starred: bool = False
+    is_completed: bool = False

@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 import pytest
-from config.dependency import get_current_user
+from config.dependency import get_current_user_from_cookie
 from config.jwt import create_jwt_token, hash_password
 from fastapi.testclient import TestClient
 from infrastructure.database import get_db
@@ -19,7 +19,7 @@ from tests.utils import (
 @pytest.fixture
 def client():
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_current_user] = override_get_current_user
+    app.dependency_overrides[get_current_user_from_cookie] = override_get_current_user
     client = TestClient(app)
     yield client
 
