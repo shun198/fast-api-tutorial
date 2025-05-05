@@ -13,6 +13,7 @@ class AppSettings(BaseSettings):
     SQLALCHEMY_DATABASE_URL: str = os.environ.get("SQLALCHEMY_DATABASE_URL")
     SLACK_WEBHOOK_URL: str = os.environ.get("SLACK_WEBHOOK_URL", "")
     DEBUG: bool = os.environ.get("DEBUG") == "True"
+    SENDGRID_API_KEY: str = os.environ.get("SENDGRID_API_KEY")
 
 
 app_settings = AppSettings()
