@@ -1,12 +1,12 @@
 from datetime import timedelta
 
 import pytest
-from fastapi.testclient import TestClient
-from main import app
-from models.todo import Todos
-from models.user import Users
-from config.jwt import create_jwt_token, hash_password
 from config.dependency import get_current_user
+from config.jwt import create_jwt_token, hash_password
+from fastapi.testclient import TestClient
+from infrastructure.database import get_db
+from main import app
+from models import Todos, Users
 from sqlalchemy import text
 from tests.utils import (
     TestingSessionLocal,
@@ -14,8 +14,6 @@ from tests.utils import (
     override_get_db,
     test_engine,
 )
-
-from infrastructure.database import get_db
 
 
 @pytest.fixture

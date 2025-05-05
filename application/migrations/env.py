@@ -1,7 +1,9 @@
 from logging.config import fileConfig
 
+# alembicがどのmodelからtableをcreateするか判断するためにmodelsのimportが必要
+import models
 from alembic import context
-from infrastructure.database import Base, SQLALCHEMY_DATABASE_URL
+from infrastructure.database import SQLALCHEMY_DATABASE_URL, Base
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides

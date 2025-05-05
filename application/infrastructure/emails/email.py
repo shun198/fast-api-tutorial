@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from config.env import app_settings
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
@@ -21,25 +24,34 @@ else:
     sg = SendGridAPIClient(app_settings.SENDGRID_API_KEY)
 
 
-async def send_email(email, html):
+# テンプレート設定
+BASE_DIR = Path(__file__).resolve().parent.parent
+templates_dir = BASE_DIR / "emails/templates"
+jinja_env = Environment(
+    loader=FileSystemLoader(str(templates_dir)),
+    autoescape=select_autoescape(["html", "xml"]),
+)
+
+
+async def send_email(email, template_name: str, subject: str, context: dict):
+    template = jinja_env.get_template(template_name)
+    html = template.render(context)
     if app_settings.DEBUG:
         message = MessageSchema(
-            subject="Fastapi-Mail module",
+            subject=subject,
             recipients=email.model_dump().get("email"),
             body=html,
             subtype=MessageType.html,
         )
         await fm.send_message(message)
     else:
+        # sendgrid
+        # https://sendgrid.kke.co.jp/docs/Integrate/Code_Examples/v2_Mail/python.html
+        # https://github.com/sendgrid/sendgrid-python
         message = Mail(
-            subject="Sending with Twilio SendGrid is Fun",
-            from_email="from_email@example.com",
+            subject=subject,
             to_emails=email.model_dump().get("email"),
+            from_email="from_email@example.com",
             html_content=html,
         )
         await sg.send(message)
-
-
-# sendgrid
-# https://sendgrid.kke.co.jp/docs/Integrate/Code_Examples/v2_Mail/python.html
-# https://github.com/sendgrid/sendgrid-python

@@ -7,7 +7,6 @@ from config.jwt import check_password, create_jwt_token, decode_jwt_token, hash_
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from infrastructure.email import send_email
 from jose import JWTError
 from schemas.requests.auth_request_schema import (
     CreateUserRequest,
@@ -17,6 +16,8 @@ from schemas.requests.auth_request_schema import (
 )
 from schemas.responses.auth_response_schema import TokenResponse
 from usecases.user_usecase import UserUsecase
+
+from infrastructure.emails.email import send_email
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -33,6 +34,7 @@ async def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this email or username already exists",
         )
+
     return {"msg": "user created"}
 
 
@@ -112,10 +114,12 @@ async def refresh_token(
 
 
 @router.post("/email")
-async def simple_send(email: EmailSchema) -> JSONResponse:
-    html = """<p>Hi this test mail, thanks for using Fastapi-mail</p> """
+async def welcome_email(email: EmailSchema) -> JSONResponse:
+    context = {"name": "田中"}
     try:
-        await send_email(email, html)
+        await send_email(
+            email, "welcome_email.html", subject="ようこそ", context=context
+        )
         return JSONResponse(
             status_code=status.HTTP_200_OK, content={"msg": "email has been sent"}
         )

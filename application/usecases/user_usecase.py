@@ -1,4 +1,4 @@
-from models.user import Users
+from models import Users
 from repositories.user_repository import UserRepository
 from schemas.requests.auth_request_schema import CreateUserRequest
 

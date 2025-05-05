@@ -15,9 +15,6 @@ build:
 down:
 	docker-compose down
 
-update:
-	$(RUN_APP) uv update
-
 format:
 	$(RUN_UV) ruff format
 

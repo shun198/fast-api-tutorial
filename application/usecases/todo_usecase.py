@@ -1,5 +1,4 @@
-from models.todo import Todos
-from models.user import Users
+from models import Todos, Users
 from repositories.todo_repository import TodoRepository
 from schemas.requests.todo_request_schema import CreateTodoRequest, UpdateTodoRequest
 

@@ -1,6 +1,6 @@
 from config.jwt import hash_password
 from infrastructure.database import Base
-from models.user import Users
+from models import Users
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
