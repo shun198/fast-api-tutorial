@@ -1,7 +1,6 @@
 import pytest
-
-from fastapi import status
 from config.dependency import get_current_user
+from fastapi import status
 from main import app
 
 
@@ -10,7 +9,7 @@ def create_data():
     return {
         "title": "Created Todo",
         "description": "Created test",
-        "priority": 2,
+        "is_starred": False,
     }
 
 
@@ -19,8 +18,8 @@ def update_data():
     return {
         "title": "Updated Todo",
         "description": "Updated test",
-        "priority": 2,
-        "complete": True,
+        "is_starred": False,
+        "is_completed": True,
     }
 
 
@@ -33,8 +32,8 @@ def test_list_todos(client, headers, test_todo_one):
             "id": test_todo_one.id,
             "title": test_todo_one.title,
             "description": test_todo_one.description,
-            "priority": test_todo_one.priority,
-            "complete": test_todo_one.complete,
+            "is_starred": test_todo_one.is_starred,
+            "is_completed": test_todo_one.is_completed,
             "owner_id": test_todo_one.owner_id,
         }
     ]
@@ -53,8 +52,8 @@ def test_read_todo(client, headers, test_todo_one):
         "id": test_todo_one.id,
         "title": test_todo_one.title,
         "description": test_todo_one.description,
-        "priority": test_todo_one.priority,
-        "complete": test_todo_one.complete,
+        "is_starred": test_todo_one.is_starred,
+        "is_completed": test_todo_one.is_completed,
         "owner_id": test_todo_one.owner_id,
     }
 
@@ -76,7 +75,7 @@ def test_create_todo(client, headers, create_data, test_todo_one):
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["title"] == create_data["title"]
     assert response.json()["description"] == create_data["description"]
-    assert response.json()["priority"] == create_data["priority"]
+    assert response.json()["is_starred"] == create_data["is_starred"]
 
 
 def test_create_todos_unauthorized(client, create_data):
@@ -92,7 +91,7 @@ def test_update_todo(client, headers, update_data, test_todo_one):
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["title"] == update_data["title"]
     assert response.json()["description"] == update_data["description"]
-    assert response.json()["priority"] == update_data["priority"]
+    assert response.json()["is_starred"] == update_data["is_starred"]
 
 
 def test_update_todo_not_found(client, headers, update_data, non_existing_user):

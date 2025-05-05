@@ -73,8 +73,8 @@ def test_todo_one():
         id=1,
         title="test task 01",
         description="description of test task 01",
-        priority=1,
-        complete=False,
+        is_starred=False,
+        is_completed=False,
         owner_id=user.id,
     )
     db.add(todo)
