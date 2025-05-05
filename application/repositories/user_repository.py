@@ -10,10 +10,13 @@ class UserRepository:
         self.db = db
 
     def find_by_username(self, username: str) -> Users:
-        user = self.db.execute(
-            select(Users).where(Users.username == username)
-        ).scalar_one_or_none()
-        return user
+        try:
+            user = self.db.execute(
+                select(Users).where(Users.username == username)
+            ).scalar_one_or_none()
+            return user
+        except Exception:
+            None
 
     def create(self, hashed_password: str, user_model: CreateUserRequest) -> Users:
         try:

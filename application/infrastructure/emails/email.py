@@ -39,7 +39,7 @@ async def send_email(email: str, template_name: str, subject: str, context: dict
     if app_settings.DEBUG:
         message = MessageSchema(
             subject=subject,
-            recipients=email,
+            recipients=[email],
             body=html,
             subtype=MessageType.html,
         )

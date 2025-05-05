@@ -75,7 +75,7 @@ async def login_for_access_token(
     # https://fastapi.tiangolo.com/advanced/response-cookies/#use-a-response-parameter
     response.set_cookie(
         key="access_token",
-        value=access_token,
+        value=f"Bearer {access_token}",
         httponly=app_settings.COOKIE_HTTP_ONLY,
         secure=app_settings.COOKIE_SECURE,
         samesite=app_settings.COOKIE_SAME_SITE,
@@ -83,7 +83,7 @@ async def login_for_access_token(
     )
     response.set_cookie(
         key="refresh_token",
-        value=refresh_token,
+        value=f"Bearer {refresh_token}",
         httponly=app_settings.COOKIE_HTTP_ONLY,
         secure=app_settings.COOKIE_SECURE,
         samesite=app_settings.COOKIE_SAME_SITE,
@@ -128,7 +128,7 @@ async def refresh_token(
         )
         response.set_cookie(
             key="access_token",
-            value=new_access_token,
+            value=f"Bearer {new_access_token}",
             httponly=app_settings.COOKIE_HTTP_ONLY,
             secure=app_settings.COOKIE_SECURE,
             samesite=app_settings.COOKIE_SAME_SITE,
