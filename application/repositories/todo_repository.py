@@ -40,7 +40,7 @@ class TodoRepository:
     ) -> Todos:
         self.db.execute(
             update(Todos)
-            .where(Todos.id == todo_request.id, Todos.owner_id == user.id)
+            .where(Todos.id == todo.id, Todos.owner_id == user.id)
             .values(**todo_request.model_dump())
         )
         self.db.commit()

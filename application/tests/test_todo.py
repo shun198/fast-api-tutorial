@@ -20,6 +20,7 @@ def update_data():
         "title": "Updated Todo",
         "description": "Updated test",
         "priority": 2,
+        "complete": True,
     }
 
 
