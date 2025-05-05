@@ -1,8 +1,6 @@
-FROM tiangolo/uvicorn-gunicorn:python3.11
+FROM ghcr.io/astral-sh/uv:python3.12-alpine
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 WORKDIR /code
 COPY application/pyproject.toml /code/
-RUN pip install --upgrade pip && pip install poetry
-RUN poetry install
-COPY application/ /code/
+RUN uv sync

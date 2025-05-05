@@ -13,8 +13,7 @@ from schemas.requests.auth_request_schema import (
     TokenRequest,
 )
 from schemas.responses.auth_response_schema import TokenResponse
-
-from application.usecases.user_usecase import UserUsecase
+from usecases.user_usecase import UserUsecase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 

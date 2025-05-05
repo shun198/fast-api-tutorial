@@ -9,8 +9,7 @@ from repositories.user_repository import UserRepository
 from schemas.requests.auth_request_schema import CurrentUserRequest
 from sqlalchemy.orm import Session
 from usecases.todo_usecase import TodoUsecase
-
-from application.usecases.user_usecase import UserUsecase
+from usecases.user_usecase import UserUsecase
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
