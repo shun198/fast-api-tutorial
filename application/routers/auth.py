@@ -5,10 +5,13 @@ from config.dependency import get_user_usecase
 from config.env import app_settings
 from config.jwt import check_password, create_jwt_token, decode_jwt_token, hash_password
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from infrastructure.email import send_email
 from jose import JWTError
 from schemas.requests.auth_request_schema import (
     CreateUserRequest,
+    EmailSchema,
     RefreshTokenRequest,
     TokenRequest,
 )
@@ -105,6 +108,21 @@ async def refresh_token(
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
+        )
+
+
+@router.post("/email")
+async def simple_send(email: EmailSchema) -> JSONResponse:
+    html = """<p>Hi this test mail, thanks for using Fastapi-mail</p> """
+    try:
+        await send_email(email, html)
+        return JSONResponse(
+            status_code=status.HTTP_200_OK, content={"msg": "email has been sent"}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Cannot send email: {e}",
         )
 
 

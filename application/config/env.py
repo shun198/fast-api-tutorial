@@ -12,6 +12,7 @@ class AppSettings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.environ.get("REFRESH_TOKEN_EXPIRE_DAYS", 1))
     SQLALCHEMY_DATABASE_URL: str = os.environ.get("SQLALCHEMY_DATABASE_URL")
     SLACK_WEBHOOK_URL: str = os.environ.get("SLACK_WEBHOOK_URL", "")
+    DEBUG: bool = os.environ.get("DEBUG") == "True"
 
 
 app_settings = AppSettings()

@@ -40,10 +40,6 @@ def test_get_current_user_invalid_user_id():
     pass
 
 
-def test_get_current_user_invalid_user_id():
-    pass
-
-
 def test_get_current_user_token_expired():
     pass
 
