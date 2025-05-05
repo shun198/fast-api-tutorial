@@ -11,12 +11,6 @@ class CreateUserRequest(BaseModel):
     phone_number: str
 
 
-class TokenRequest(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str
-
-
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
