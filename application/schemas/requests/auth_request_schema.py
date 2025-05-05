@@ -1,6 +1,4 @@
-from typing import List
-
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 class CreateUserRequest(BaseModel):
@@ -26,7 +24,3 @@ class RefreshTokenRequest(BaseModel):
 class CurrentUserRequest(BaseModel):
     username: str
     id: int
-
-
-class EmailSchema(BaseModel):
-    email: List[EmailStr]

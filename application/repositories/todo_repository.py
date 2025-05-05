@@ -14,17 +14,13 @@ class TodoRepository:
 
     def find_all(self, user: Users) -> list[Todos]:
         todos = self.db.scalars(
-            select(Todos)
-            .filter(Todos.owner_id == user.id)
-            .order_by(Todos.id)
+            select(Todos).filter(Todos.owner_id == user.id).order_by(Todos.id)
         ).all()
         return todos
 
     def find_one(self, user: Users, todo_id: int) -> Todos | None:
         todo = self.db.scalars(
-            select(Todos).filter(
-                Todos.id == todo_id, Todos.owner_id == user.id
-            )
+            select(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id)
         ).first()
         return todo
 
