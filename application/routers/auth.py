@@ -5,19 +5,16 @@ from config.dependency import get_user_usecase
 from config.env import app_settings
 from config.jwt import check_password, create_jwt_token, decode_jwt_token, hash_password
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from infrastructure.emails.email import send_email
 from jose import JWTError
 from schemas.requests.auth_request_schema import (
     CreateUserRequest,
-    EmailSchema,
     RefreshTokenRequest,
     TokenRequest,
 )
 from schemas.responses.auth_response_schema import TokenResponse
 from usecases.user_usecase import UserUsecase
-
-from infrastructure.emails.email import send_email
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -34,8 +31,17 @@ async def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this email or username already exists",
         )
-
-    return {"msg": "user created"}
+    context = {"name": user.username}
+    try:
+        await send_email(
+            user.email, "welcome_email.html", subject="ようこそ", context=context
+        )
+        return {"msg": "user created"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Cannot send email: {e}",
+        )
 
 
 def _authenticate_user(username: str, password: str, user_usecase: UserUsecase):
@@ -111,24 +117,3 @@ async def refresh_token(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
         )
-
-
-@router.post("/email")
-async def welcome_email(email: EmailSchema) -> JSONResponse:
-    context = {"name": "田中"}
-    try:
-        await send_email(
-            email, "welcome_email.html", subject="ようこそ", context=context
-        )
-        return JSONResponse(
-            status_code=status.HTTP_200_OK, content={"msg": "email has been sent"}
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Cannot send email: {e}",
-        )
-
-
-# TODO: メール送信ロジックを作成
-# https://sabuhish.github.io/fastapi-mail/example/
