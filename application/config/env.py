@@ -14,6 +14,9 @@ class AppSettings(BaseSettings):
     SLACK_WEBHOOK_URL: str = os.environ.get("SLACK_WEBHOOK_URL", "")
     DEBUG: bool = os.environ.get("DEBUG") == "True"
     SENDGRID_API_KEY: str = os.environ.get("SENDGRID_API_KEY")
+    COOKIE_SECURE: bool = os.environ.get("COOKIE_SECURE") == "True"
+    COOKIE_HTTP_ONLY: bool = os.environ.get("COOKIE_HTTP_ONLY") == "True"
+    COOKIE_SAME_SITE: str = os.environ.get("COOKIE_SAME_SITE")
 
 
 app_settings = AppSettings()

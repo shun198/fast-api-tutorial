@@ -33,13 +33,13 @@ jinja_env = Environment(
 )
 
 
-async def send_email(email, template_name: str, subject: str, context: dict):
+async def send_email(email: str, template_name: str, subject: str, context: dict):
     template = jinja_env.get_template(template_name)
     html = template.render(context)
     if app_settings.DEBUG:
         message = MessageSchema(
             subject=subject,
-            recipients=email.model_dump().get("email"),
+            recipients=email,
             body=html,
             subtype=MessageType.html,
         )

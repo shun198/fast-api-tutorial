@@ -26,10 +26,8 @@ async def logging_middleware(request: Request, call_next):
     finally:
         return response
 
+
 # https://fastapi.tiangolo.com/ja/tutorial/cors/#corsmiddleware
-# https://fastapi.tiangolo.com/advanced/response-cookies/#use-a-response-parameter
-# https://zenn.dev/noknmgc/articles/fastapi-jwt-cookie
-# https://github.com/fastapi/fastapi/issues/480
 app.add_middleware(
     CORSMiddleware,
     allow_origins="http://localhost:3000",

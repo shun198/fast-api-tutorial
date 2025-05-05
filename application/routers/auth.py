@@ -4,16 +4,11 @@ from typing import Annotated
 from config.dependency import get_user_usecase
 from config.env import app_settings
 from config.jwt import check_password, create_jwt_token, decode_jwt_token, hash_password
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from infrastructure.emails.email import send_email
 from jose import JWTError
-from schemas.requests.auth_request_schema import (
-    CreateUserRequest,
-    RefreshTokenRequest,
-    TokenRequest,
-)
-from schemas.responses.auth_response_schema import TokenResponse
+from schemas.requests.auth_request_schema import CreateUserRequest, RefreshTokenRequest
 from usecases.user_usecase import UserUsecase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -56,9 +51,10 @@ def _authenticate_user(username: str, password: str, user_usecase: UserUsecase):
 # OAuthを使って認証
 @router.post("/login")
 async def login_for_access_token(
+    response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     user_usecase: UserUsecase = Depends(get_user_usecase),
-) -> TokenRequest:
+) -> Response:
     user = _authenticate_user(form_data.username, form_data.password, user_usecase)
     if not user:
         raise HTTPException(
@@ -76,19 +72,40 @@ async def login_for_access_token(
         user.id,
         timedelta(days=app_settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
-
-    return TokenRequest(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        token_type="bearer",
+    # https://fastapi.tiangolo.com/advanced/response-cookies/#use-a-response-parameter
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=app_settings.COOKIE_HTTP_ONLY,
+        secure=app_settings.COOKIE_SECURE,
+        samesite=app_settings.COOKIE_SAME_SITE,
+        max_age=1800,
     )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=app_settings.COOKIE_HTTP_ONLY,
+        secure=app_settings.COOKIE_SECURE,
+        samesite=app_settings.COOKIE_SAME_SITE,
+        max_age=86400,
+    )
+    response.status_code = status.HTTP_200_OK
+    return response
+
+
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
+    return {"message": "Logged out"}
 
 
 @router.post("/refresh")
 async def refresh_token(
+    response: Response,
     refresh_token_request: RefreshTokenRequest,
     user_usecase: UserUsecase = Depends(get_user_usecase),
-) -> TokenResponse:
+) -> Response:
     try:
         decoded_token = decode_jwt_token(
             refresh_token_request.model_dump()["refresh_token"]
@@ -109,10 +126,16 @@ async def refresh_token(
             user.id,
             timedelta(minutes=app_settings.ACCESS_TOKEN_EXPIRE_MINUTES),
         )
-        return TokenResponse(
-            access_token=new_access_token,
-            token_type="bearer",
+        response.set_cookie(
+            key="access_token",
+            value=new_access_token,
+            httponly=app_settings.COOKIE_HTTP_ONLY,
+            secure=app_settings.COOKIE_SECURE,
+            samesite=app_settings.COOKIE_SAME_SITE,
+            max_age=1800,
         )
+        response.status_code = status.HTTP_200_OK
+        return response
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
