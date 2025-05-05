@@ -4,11 +4,11 @@ from typing import Annotated
 from config.dependency import get_user_usecase
 from config.env import app_settings
 from config.jwt import check_password, create_jwt_token, decode_jwt_token, hash_password
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from infrastructure.emails.email import send_email
 from jose import JWTError
-from schemas.requests.auth_request_schema import CreateUserRequest, RefreshTokenRequest
+from schemas.requests.auth_request_schema import CreateUserRequest
 from usecases.user_usecase import UserUsecase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -97,18 +97,18 @@ async def login_for_access_token(
 def logout(response: Response):
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
-    return {"message": "Logged out"}
+    return {"msg": "Logged out"}
 
 
 @router.post("/refresh")
 async def refresh_token(
+    request: Request,
     response: Response,
-    refresh_token_request: RefreshTokenRequest,
     user_usecase: UserUsecase = Depends(get_user_usecase),
 ) -> Response:
     try:
         decoded_token = decode_jwt_token(
-            refresh_token_request.model_dump()["refresh_token"]
+            request.cookies.get("refresh_token").split("Bearer ")[1]
         )
         username: str = decoded_token.get("sub")
         user_id: int = decoded_token.get("iss")
