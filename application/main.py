@@ -2,6 +2,7 @@ import logging
 import traceback
 
 from fastapi import FastAPI, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 from infrastructure.slack import send_slack_notification
 from routers import auth, todos
 
@@ -25,8 +26,17 @@ async def logging_middleware(request: Request, call_next):
     finally:
         return response
 
-
-# TODO: cors middleware
+# https://fastapi.tiangolo.com/ja/tutorial/cors/#corsmiddleware
+# https://fastapi.tiangolo.com/advanced/response-cookies/#use-a-response-parameter
+# https://zenn.dev/noknmgc/articles/fastapi-jwt-cookie
+# https://github.com/fastapi/fastapi/issues/480
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins="http://localhost:3000",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth.router)
 app.include_router(todos.router)
