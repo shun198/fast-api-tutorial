@@ -36,12 +36,12 @@ async def create_user(
         await send_email(
             user.email, "welcome_email.html", subject="ようこそ", context=context
         )
-        return {"msg": "user created"}
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Cannot send email: {e}",
         )
+    return {"msg": "user created"}
 
 
 def _authenticate_user(username: str, password: str, user_usecase: UserUsecase):
