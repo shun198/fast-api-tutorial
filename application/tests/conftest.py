@@ -37,7 +37,6 @@ def test_admin_user_data():
         "first_name": "零一",
         "last_name": "テスト管理ユーザ",
         "password": "test",
-        "is_active": True,
         "is_admin": True,
         "phone_number": "08011112222",
     }
@@ -52,7 +51,6 @@ def test_user_one():
         first_name="零一",
         last_name="テストユーザ",
         password=hash_password("test"),
-        is_active=True,
         is_admin=True,
         phone_number="08011112222",
     )

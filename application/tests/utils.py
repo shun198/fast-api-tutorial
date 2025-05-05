@@ -30,7 +30,6 @@ def override_get_current_user():
         first_name="user_admin_01",
         last_name="test",
         password=hash_password("test"),
-        is_active=True,
         is_admin=True,
         phone_number="08011112222",
     )
