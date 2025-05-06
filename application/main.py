@@ -2,9 +2,12 @@ import logging
 import traceback
 
 from fastapi import FastAPI, Request, Response, status
+from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from infrastructure.slack import send_slack_notification
 from routers import auth, todos
+from fastapi_csrf_protect import CsrfProtect
+from config.csrf import CsrfSettings
 
 logger = logging.getLogger("uvicorn")
 
@@ -23,9 +26,11 @@ async def logging_middleware(request: Request, call_next):
         response = Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         logger.error(f"Request: {method} {url} {response.status_code} ip: {client_ip}")
         send_slack_notification(traceback.format_exc())
-    finally:
-        return response
-
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Exception Occurred",
+        )
+    return response
 
 # https://fastapi.tiangolo.com/ja/tutorial/cors/#corsmiddleware
 app.add_middleware(
@@ -35,6 +40,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# https://github.com/aekasitt/fastapi-csrf-protect
+@CsrfProtect.load_config
+def get_csrf_config():
+  return CsrfSettings()
 
 app.include_router(auth.router)
 app.include_router(todos.router)

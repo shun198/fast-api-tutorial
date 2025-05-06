@@ -17,6 +17,9 @@ class AppSettings(BaseSettings):
     COOKIE_SECURE: bool = os.environ.get("COOKIE_SECURE") == "True"
     COOKIE_HTTP_ONLY: bool = os.environ.get("COOKIE_HTTP_ONLY") == "True"
     COOKIE_SAME_SITE: str = os.environ.get("COOKIE_SAME_SITE")
+    CSRF_COOKIE_NAME: str = "csrftoken"
+    CSRF_HEADER_NAME: str = "X-CSRF-Token"
+    EXCLUDED_PATHS: list = ["/login", "/refresh"]
 
 
 app_settings = AppSettings()

@@ -6,6 +6,7 @@ from config.env import app_settings
 from config.jwt import check_password, create_jwt_token, decode_jwt_token, hash_password
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi_csrf_protect import CsrfProtect
 from infrastructure.emails.email import send_email
 from jose import JWTError
 from schemas.requests.auth_request_schema import CreateUserRequest
@@ -54,6 +55,7 @@ async def login_for_access_token(
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     user_usecase: UserUsecase = Depends(get_user_usecase),
+    csrf_protect: CsrfProtect = Depends()
 ) -> Response:
     user = _authenticate_user(form_data.username, form_data.password, user_usecase)
     if not user:
@@ -72,6 +74,7 @@ async def login_for_access_token(
         user.id,
         timedelta(days=app_settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
+    _, signed_token = csrf_protect.generate_csrf_tokens()
     # https://fastapi.tiangolo.com/advanced/response-cookies/#use-a-response-parameter
     response.set_cookie(
         key="access_token",
@@ -89,14 +92,16 @@ async def login_for_access_token(
         samesite=app_settings.COOKIE_SAME_SITE,
         max_age=86400,
     )
+    csrf_protect.set_csrf_cookie(signed_token, response)
     response.status_code = status.HTTP_200_OK
     return response
 
 
 @router.post("/logout")
-def logout(response: Response):
+def logout(response: Response, csrf_protect: CsrfProtect = Depends()):
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
+    csrf_protect.unset_csrf_cookie(response)
     return {"msg": "Logged out"}
 
 
