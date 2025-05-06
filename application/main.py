@@ -2,12 +2,14 @@ import logging
 import traceback
 
 from fastapi import FastAPI, Request, Response, status
+from starlette_csrf import CSRFMiddleware
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from infrastructure.slack import send_slack_notification
 from routers import auth, todos
-from fastapi_csrf_protect import CsrfProtect
-from config.csrf import CsrfSettings
+from config.csrf import csrf_settings
+from config.env import app_settings
+
 
 logger = logging.getLogger("uvicorn")
 
@@ -32,6 +34,10 @@ async def logging_middleware(request: Request, call_next):
         )
     return response
 
+
+# https://github.com/frankie567/starlette-csrf/tree/main
+if not app_settings.TEST_MODE:
+    app.add_middleware(CSRFMiddleware, **csrf_settings)
 # https://fastapi.tiangolo.com/ja/tutorial/cors/#corsmiddleware
 app.add_middleware(
     CORSMiddleware,
@@ -40,10 +46,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# https://github.com/aekasitt/fastapi-csrf-protect
-@CsrfProtect.load_config
-def get_csrf_config():
-  return CsrfSettings()
 
 app.include_router(auth.router)
 app.include_router(todos.router)

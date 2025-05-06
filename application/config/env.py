@@ -1,4 +1,5 @@
 import os
+import re
 
 from pydantic_settings import BaseSettings
 
@@ -19,7 +20,12 @@ class AppSettings(BaseSettings):
     COOKIE_SAME_SITE: str = os.environ.get("COOKIE_SAME_SITE")
     CSRF_COOKIE_NAME: str = "csrftoken"
     CSRF_HEADER_NAME: str = "X-CSRF-Token"
-    EXCLUDED_PATHS: list = ["/login", "/refresh"]
+    EXCLUDED_PATHS: list = [
+        re.compile(r"^/api/auth/login"),
+        re.compile(r"^/api/auth/logout"),
+        re.compile(r"^/api//auth/refresh"),
+    ]
+    TEST_MODE: bool = os.environ.get("TEST") == "True"
 
 
 app_settings = AppSettings()
